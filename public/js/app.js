@@ -13,7 +13,7 @@ const MOIS = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août'
 // Jours dispos selon le type de prestation
 function getJoursDispo(type) {
   if (type === 'decouverte') return [1, 2, 3]; // Lundi, Mardi, Mercredi
-  return [2, 3, 4, 5, 6]; // Mardi à Samedi
+  return [3, 4, 5, 6]; // Mercredi à Samedi
 }
 
 // Sélection prestation
