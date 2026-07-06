@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Réserver — Ressource A.I.M.E</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;1,9..144,400&family=DM+Sans:wght@400;500&family=Caveat:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+<nav class="nav">
+  <div class="container nav-inner">
+    <div class="logo">
+      <div class="logo-mark">A</div>
+      <div class="logo-text">RESSOURCE&nbsp;A·I·M·E</div>
+    </div>
+    <div class="nav-links">
+      <a href="https://ressource-aime.fr">Le cabinet</a>
+      <a href="https://ressource-aime.fr">L'approche</a>
+      <a href="#" class="active">Réserver</a>
+    </div>
+  </div>
+</nav>
+
+<div class="container">
+
+  <section class="hero">
+    <p class="eyebrow">Cabinet thérapeutique · Le Lamentin</p>
+    <h1>Reprends ta <em>place.</em></h1>
+    <p class="lead">Un espace neutre, sans jugement, où ce qui ne se dit plus chez toi peut enfin se déposer. <strong>Tu choisis le format qui te ressemble.</strong> Le reste, on le construit ensemble.</p>
+  </section>
+
+  <!-- ÉTAPE 1 : Choix de la prestation -->
+  <section id="step1">
+    <h2 class="section-title">Choisis ta <em>séance.</em></h2>
+    <p class="section-sub">Tu hésites ? L'appel découverte est là pour ça. Gratuit, sans engagement, 15 minutes pour voir si on se comprend.</p>
+
+    <div class="card-wide" data-id="decouverte" onclick="selectPrestation(this)">
+      <div class="card-wide-left">
+        <p class="card-wide-eyebrow">Première fois · Sans engagement</p>
+        <h3 class="card-wide-title">Commence par un <em>appel découverte.</em></h3>
+        <p class="card-wide-desc">15 minutes en visio pour faire connaissance, poser tes questions, et voir si on se comprend. Aucun engagement derrière.</p>
+      </div>
+      <div class="card-wide-right">
+        <p class="card-wide-price">Gratuit</p>
+        <p class="card-wide-meta">15 min · Visio</p>
+      </div>
+    </div>
+
+    <div class="grid">
+    <% prestations.filter(p => !p.wide).forEach(p => { %>
+<div class="card <%= p.featured ? 'featured' : '' %> <%= p.id === 'seance_enfant' ? 'enfant' : '' %> <%= (p.id === 'forfait_individuel' || p.id === 'forfait_couple') ? 'forfait' : '' %>" data-id="<%= p.id %>" data-prix="<%= p.prix %>" data-titre="<%= p.titre %>" data-paiement="<%= p.paiement %>" onclick="selectPrestation(this)">
+    
+        <p class="card-eyebrow"><%= p.eyebrow %></p>
+        <h3 class="card-title"><%= p.titre %></h3>
+        <p class="card-meta"><%= p.duree %> · <%= p.mode === 'visio' ? 'Visio' : 'Cabinet ou visio' %></p>
+        <p class="card-desc"><%= p.description || '' %></p>
+        <p class="card-price"><%= p.prixLabel %></p>
+        <% if (p.echelon) { %>
+        <p class="card-facility">Payable jusqu'à 4× sans frais</p>
+        <% } %>
+      </div>
+      <% }) %>
+    </div>
+  </section>
+
+  <!-- ÉTAPE 2 : Format + Calendrier -->
+  <section id="step2" class="booking" style="display:none">
+    <h2 class="booking-title">Format & <em>créneau.</em></h2>
+    <p class="booking-sub">Tu peux annuler ou déplacer ton rendez-vous jusqu'à 48h avant.</p>
+
+    <div id="modeSection" class="mode-grid" style="display:none">
+      <div class="mode selected" data-mode="cabinet" onclick="selectMode(this)">
+        <p class="mode-name">Au cabinet</p>
+        <p class="mode-detail">Centre commercial Place d'Armes, à l'étage · Stationnement gratuit</p>
+      </div>
+      <div class="mode" data-mode="visio" onclick="selectMode(this)">
+        <p class="mode-name">En visio</p>
+        <p class="mode-detail">Lien sécurisé envoyé après confirmation</p>
+      </div>
+    </div>
+
+    <div class="cal-wrap">
+      <div class="cal">
+        <div class="cal-head">
+          <div class="cal-month" id="calMonth"></div>
+          <div class="cal-nav">
+            <button onclick="changeMonth(-1)">&#8249;</button>
+            <button onclick="changeMonth(1)">&#8250;</button>
+          </div>
+        </div>
+        <div class="cal-grid" id="calGrid"></div>
+      </div>
+      <div class="slots-wrap">
+        <p class="slots-label" id="slotsLabel">Sélectionne un jour</p>
+        <div class="slots" id="slots"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ÉTAPE 3 : Formulaire -->
+  <section id="step3" style="display:none">
+    <h2 class="booking-title">Tes <em>coordonnées.</em></h2>
+    <form id="bookingForm" action="/booking/create" method="POST" class="form">
+      <input type="hidden" name="prestationId" id="fPrestationId">
+      <input type="hidden" name="mode" id="fMode">
+      <input type="hidden" name="date" id="fDate">
+      <input type="hidden" name="heure" id="fHeure">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Prénom *</label>
+          <input type="text" name="prenom" required>
+        </div>
+        <div class="form-group">
+          <label>Nom *</label>
+          <input type="text" name="nom" required>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Email *</label>
+          <input type="email" name="email" required>
+        </div>
+        <div class="form-group">
+          <label>Téléphone</label>
+          <input type="tel" name="telephone">
+        </div>
+      </div>
+
+      <div class="summary" id="summary"></div>
+
+      <button type="submit" class="cta" id="ctaBtn">Confirmer</button>
+      <div class="trust">
+        <span>Paiement sécurisé Stripe</span>
+        <span>Annulation jusqu'à 48h avant</span>
+        <span>Confidentialité totale</span>
+      </div>
+    </form>
+  </section>
+
+  <div class="quote">
+    « Ce n'est pas un aveu d'échec.<br><em>C'est un acte de courage.</em> »
+  </div>
+
+</div>
+
+<script src="https://js.stripe.com/v3/"></script>
+<script src="/js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Réserver — Karla Ampigny Lucenay, Psychologue clinicienne</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,700;1,9..144,300;1,9..144,400;1,9..144,700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--teal:#1A4A5C;--teal-mid:#235163;--teal-pale:#D6E8EF;--orange:#F08838;--orange-h:#E0701C;--orange-p:#FFF0E5;--cream:#FDF6EE;--ink:#0D1F28;--mist:#5A7A87;--border:#E2EDF2;--white:#FFFFFF}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;background:var(--cream);color:var(--ink);min-height:100vh}
+.nav{position:sticky;top:0;z-index:100;background:rgba(253,246,238,0.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 24px}
+.nav-inner{max-width:900px;margin:0 auto;height:60px;display:flex;align-items:center;justify-content:space-between}
+.nav-brand{font-family:'Fraunces',serif;font-size:18px;font-weight:700;font-style:italic;color:var(--teal);line-height:1;text-decoration:none}
+.nav-brand span{display:block;font-family:'Inter',sans-serif;font-style:normal;font-size:10px;font-weight:500;color:var(--mist);letter-spacing:1.5px;text-transform:uppercase;margin-top:2px}
+.nav-back{font-size:13px;font-weight:500;color:var(--mist);text-decoration:none}
+.nav-back:hover{color:var(--teal)}
+.container{max-width:900px;margin:0 auto;padding:0 24px 80px}
+.hero{padding:52px 0 36px}
+.hero-eyebrow{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--orange);margin-bottom:14px}
+.hero h1{font-family:'Fraunces',serif;font-size:clamp(34px,5vw,52px);font-weight:700;font-style:italic;color:var(--ink);line-height:1.05;margin-bottom:14px}
+.hero h1 em{color:var(--teal)}
+.hero p{font-size:15px;line-height:1.75;color:var(--mist);max-width:520px}
+.section-title{font-family:'Fraunces',serif;font-size:26px;font-weight:700;font-style:italic;color:var(--ink);margin-bottom:6px}
+.section-title em{color:var(--teal)}
+.section-sub{font-size:13px;color:var(--mist);margin-bottom:24px;line-height:1.6}
+.card-decouverte{background:var(--teal);border-radius:20px;padding:28px 32px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;gap:24px;transition:transform 0.2s,box-shadow 0.2s;text-decoration:none}
+.card-decouverte:hover{transform:translateY(-2px);box-shadow:0 12px 36px rgba(26,74,92,0.25)}
+.card-dec-left{flex:1}
+.card-dec-eyebrow{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.6);margin-bottom:8px}
+.card-dec-title{font-family:'Fraunces',serif;font-size:22px;font-weight:700;font-style:italic;color:#fff;margin-bottom:6px;line-height:1.15}
+.card-dec-desc{font-size:13px;color:rgba(255,255,255,0.72);line-height:1.6}
+.card-dec-right{text-align:right;flex-shrink:0}
+.card-dec-price{font-family:'Fraunces',serif;font-size:20px;font-weight:700;font-style:italic;color:#fff}
+.card-dec-meta{font-size:12px;color:rgba(255,255,255,0.6);margin-top:3px}
+.cards-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:36px}
+@media(max-width:600px){.cards-grid{grid-template-columns:1fr}.card-decouverte{flex-direction:column;align-items:flex-start}.card-dec-right{text-align:left}}
+.card{background:var(--white);border-radius:20px;padding:26px;cursor:pointer;border:2px solid transparent;transition:all 0.2s;box-shadow:0 2px 12px rgba(13,31,40,0.06)}
+.card:hover{border-color:var(--teal-pale);box-shadow:0 8px 24px rgba(13,31,40,0.10);transform:translateY(-2px)}
+.card.selected{border-color:var(--teal);box-shadow:0 8px 24px rgba(26,74,92,0.15)}
+.card-eyebrow{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--orange-h);margin-bottom:8px}
+.card-title{font-family:'Fraunces',serif;font-size:20px;font-weight:700;font-style:italic;color:var(--teal);margin-bottom:8px;line-height:1.2}
+.card-desc{font-size:13px;color:var(--mist);line-height:1.65;margin-bottom:14px}
+.card-footer{display:flex;justify-content:space-between;align-items:center;padding-top:12px;border-top:1px solid var(--border)}
+.card-meta{font-size:12px;color:var(--mist)}
+.card-price{font-size:12px;font-weight:700;color:var(--teal)}
+.booking-section{display:none;margin-top:8px}
+.booking-title{font-family:'Fraunces',serif;font-size:26px;font-weight:700;font-style:italic;color:var(--ink);margin-bottom:6px}
+.booking-title em{color:var(--teal)}
+.booking-sub{font-size:13px;color:var(--mist);margin-bottom:24px}
+.mode-grid{display:flex;gap:10px;margin-bottom:24px}
+.mode{flex:1;background:var(--white);border:2px solid var(--border);border-radius:14px;padding:14px 16px;cursor:pointer;transition:all 0.2s}
+.mode.selected{border-color:var(--teal);background:var(--teal-pale)}
+.mode-name{font-size:14px;font-weight:700;color:var(--ink);margin-bottom:3px}
+.mode-detail{font-size:12px;color:var(--mist);line-height:1.5}
+.cal-wrap{display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start}
+@media(max-width:600px){.cal-wrap{grid-template-columns:1fr}}
+.cal{background:var(--white);border-radius:18px;padding:22px;box-shadow:0 2px 12px rgba(13,31,40,0.06)}
+.cal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
+.cal-month{font-family:'Fraunces',serif;font-size:17px;font-weight:700;font-style:italic;color:var(--teal)}
+.cal-nav{display:flex;gap:6px}
+.cal-nav button{background:none;border:1px solid var(--border);border-radius:8px;width:30px;height:30px;cursor:pointer;font-size:16px;color:var(--mist);transition:all 0.15s;display:flex;align-items:center;justify-content:center}
+.cal-nav button:hover{border-color:var(--teal);color:var(--teal)}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+.cal-day-label{text-align:center;font-size:9px;font-weight:700;letter-spacing:1px;color:var(--mist);text-transform:uppercase;padding-bottom:6px}
+.cal-day{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:9px;font-size:12px;font-weight:500;cursor:pointer;transition:all 0.15s;color:var(--ink)}
+.cal-day:hover:not(.disabled):not(.empty){background:var(--teal-pale);color:var(--teal)}
+.cal-day.selected{background:var(--teal);color:#fff;font-weight:700}
+.cal-day.disabled,.cal-day.empty{opacity:0.25;cursor:default}
+.slots-wrap{background:var(--white);border-radius:18px;padding:22px;box-shadow:0 2px 12px rgba(13,31,40,0.06);min-height:180px}
+.slots-label{font-size:13px;font-weight:600;color:var(--mist);margin-bottom:14px;font-style:italic}
+.slot{padding:12px 16px;background:var(--cream);border:1.5px solid var(--border);border-radius:11px;font-size:14px;font-weight:600;color:var(--teal);cursor:pointer;transition:all 0.15s;margin-bottom:8px;width:100%;text-align:center}
+.slot:hover{background:var(--teal);color:#fff;border-color:var(--teal)}
+.slot.selected{background:var(--teal);color:#fff;border-color:var(--teal)}
+.slots-empty{font-size:13px;color:var(--mist);font-style:italic;padding:12px 0}
+.form-section{display:none;margin-top:8px}
+.form{background:var(--white);border-radius:20px;padding:32px;box-shadow:0 2px 12px rgba(13,31,40,0.06)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+@media(max-width:600px){.form-row{grid-template-columns:1fr}}
+.form-group label{display:block;font-size:11px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--mist);margin-bottom:6px}
+.form-group input{width:100%;padding:12px 14px;border:1.5px solid var(--border);border-radius:11px;font-size:14px;color:var(--ink);font-family:'Inter',sans-serif;background:var(--cream);outline:none;transition:border-color 0.2s}
+.form-group input:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(26,74,92,0.08)}
+.summary{background:var(--teal-pale);border-radius:13px;padding:14px 16px;margin:18px 0;font-size:13px;color:var(--teal);line-height:1.7}
+.summary strong{font-weight:700}
+.btn-submit{width:100%;padding:15px;background:var(--teal);color:#fff;border:none;border-radius:13px;font-size:15px;font-weight:800;font-family:'Inter',sans-serif;cursor:pointer;transition:all 0.2s;box-shadow:0 6px 20px rgba(26,74,92,0.25)}
+.btn-submit:hover{background:var(--teal-mid);transform:translateY(-1px);box-shadow:0 10px 28px rgba(26,74,92,0.32)}
+.trust{display:flex;justify-content:center;gap:18px;margin-top:12px;flex-wrap:wrap}
+.trust span{font-size:11px;color:var(--mist)}
+.trust span::before{content:'✓ ';color:var(--teal);font-weight:700}
+.quote{text-align:center;padding:56px 0 0;font-family:'Fraunces',serif;font-style:italic;font-size:17px;color:var(--mist);line-height:1.6}
+.quote em{color:var(--teal)}
+.loading{display:flex;align-items:center;gap:8px;color:var(--mist);font-size:13px;padding:14px 0}
+.spinner{width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--teal);border-radius:50%;animation:spin 0.7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.cal-day.available{background:#3a8c6e;color:#fff;font-weight:700;}
+.cal-day.unavailable{text-decoration:line-through;color:var(--border);cursor:default;pointer-events:none;}
+.cal-day.avail{background:var(--teal);color:#fff;font-weight:700;}
+.cal-day.full{text-decoration:line-through;color:var(--border);cursor:default;}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="https://karla-psychologue.ressource-aime.fr" class="nav-brand">
+      karla.
+      <span>psychologue clinicienne</span>
+    </a>
+    <a href="https://karla-psychologue.ressource-aime.fr" class="nav-back">← Retour au site</a>
+  </div>
+</nav>
+
+<div class="container">
+
+  <section class="hero">
+    <p class="hero-eyebrow">Prise de rendez-vous</p>
+    <h1>Choisir, <em>c'est déjà commencer.</em></h1>
+    <p>Choisis le type de séance qui te correspond.</p>
+  </section>
+
+  <section id="step1">
+    <h2 class="section-title">Ta <em>séance.</em></h2>
+    <p class="section-sub">Tu hésites ? L'appel découverte est gratuit, sans engagement, 15 minutes pour voir si on se comprend.</p>
+
+    <a href="https://calendly.com/ressourceaime/appel" target="_blank" class="card-decouverte">
+      <div class="card-dec-left">
+        <p class="card-dec-eyebrow">Première fois · Sans engagement</p>
+        <h3 class="card-dec-title">Commence par un appel découverte.</h3>
+        <p class="card-dec-desc">15 minutes en visio pour faire connaissance, poser tes questions, et voir si on se comprend. Aucun engagement derrière.</p>
+      </div>
+      <div class="card-dec-right">
+        <p class="card-dec-price">Gratuit</p>
+        <p class="card-dec-meta">15 min · Visio</p>
+      </div>
+    </a>
+
+    <div class="cards-grid">
+      <% prestations.forEach(p => { %>
+      <div class="card" data-id="<%= p.id %>" data-titre="<%= p.titre %>" onclick="selectCard(this)">
+        <p class="card-eyebrow"><%= p.eyebrow %></p>
+        <h3 class="card-title"><%= p.titre %></h3>
+        <p class="card-desc"><%= p.description %></p>
+        <div class="card-footer">
+          <span class="card-meta"><%= p.duree %> · Cabinet ou visio</span>
+          <span class="card-price"><%= p.prixLabel %></span>
+        </div>
+      </div>
+      <% }) %>
+    </div>
+  </section>
+
+  <section id="step2" class="booking-section">
+    <h2 class="booking-title">Format & <em>créneau.</em></h2>
+    <p class="booking-sub">Tu peux annuler ou déplacer ton rendez-vous jusqu'à 48h avant.</p>
+
+    <div class="mode-grid">
+      <div class="mode selected" data-mode="cabinet" onclick="selectMode(this)">
+        <p class="mode-name">Au cabinet</p>
+        <p class="mode-detail">Centre commercial Place d'Armes, Le Lamentin · Stationnement gratuit</p>
+      </div>
+      <div class="mode" data-mode="visio" onclick="selectMode(this)">
+        <p class="mode-name">En visio</p>
+        <p class="mode-detail">Lien sécurisé envoyé après confirmation</p>
+      </div>
+    </div>
+
+    <div class="cal-wrap">
+      <div class="cal">
+        <div class="cal-head">
+          <div class="cal-month" id="calMonth"></div>
+          <div class="cal-nav">
+            <button onclick="changeMonth(-1)">&#8249;</button>
+            <button onclick="changeMonth(1)">&#8250;</button>
+          </div>
+        </div>
+        <div class="cal-grid" id="calGrid"></div>
+      </div>
+      <div class="slots-wrap">
+        <p class="slots-label" id="slotsLabel">Sélectionne un jour</p>
+        <div id="slots"></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="step3" class="form-section">
+    <h2 class="booking-title" style="margin-bottom:22px">Tes <em>coordonnées.</em></h2>
+    <form id="bookingForm" action="/booking/create" method="POST" class="form">
+      <input type="hidden" name="prestationId" id="fPrestationId">
+      <input type="hidden" name="mode" id="fMode">
+      <input type="hidden" name="date" id="fDate">
+      <input type="hidden" name="heure" id="fHeure">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Prénom *</label>
+          <input type="text" name="prenom" required placeholder="Ton prénom">
+        </div>
+        <div class="form-group">
+          <label>Nom *</label>
+          <input type="text" name="nom" required placeholder="Ton nom">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Email *</label>
+          <input type="email" name="email" required placeholder="ton@email.fr">
+        </div>
+        <div class="form-group">
+          <label>Téléphone</label>
+          <input type="tel" name="telephone" placeholder="+596 696 00 00 00">
+        </div>
+      </div>
+      <div class="summary" id="summary"></div>
+      <button type="submit" class="btn-submit">Confirmer le rendez-vous</button>
+      <div class="trust">
+        <span>Confirmation par email</span>
+        <span>Annulation jusqu'à 48h avant</span>
+        <span>Confidentialité totale</span>
+      </div>
+    </form>
+  </section>
+
+  <div class="quote">« Ce n'est pas un aveu d'échec.<br><em>C'est un acte de courage.</em> »</div>
+
+</div>
+
+<script>
+let sel = null, selMode = 'cabinet', selDate = null, curY = new Date().getFullYear(), curM = new Date().getMonth();
+const MOIS = ['Janvier','Fevrier','Mars','Avril','Mai','Juin','Juillet','Aout','Septembre','Octobre','Novembre','Decembre'];
+
+function selectCard(el) {
+  document.querySelectorAll('.card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  sel = { id: el.dataset.id, titre: el.dataset.titre };
+  selDate = null;
+  document.getElementById('step3').style.display = 'none';
+  const s2 = document.getElementById('step2');
+  s2.style.display = 'block';
+  s2.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  curY = new Date().getFullYear(); curM = new Date().getMonth();
+  renderCal();
+}
+
+function selectMode(el) {
+  document.querySelectorAll('.mode').forEach(m => m.classList.remove('selected'));
+  el.classList.add('selected');
+  selMode = el.dataset.mode;
+}
+
+function changeMonth(d) {
+  curM += d;
+  if (curM > 11) { curM = 0; curY++; }
+  if (curM < 0)  { curM = 11; curY--; }
+  renderCal();
+}
+
+async function renderCal() {
+  document.getElementById('calMonth').textContent = MOIS[curM] + ' ' + curY;
+  const grid = document.getElementById('calGrid');
+  grid.innerHTML = '';
+  ['L','M','M','J','V','S','D'].forEach(d => {
+    const el = document.createElement('div');
+    el.className = 'cal-day-label'; el.textContent = d; grid.appendChild(el);
+  });
+  const firstDay = new Date(curY, curM, 1).getDay();
+  const offset = firstDay === 0 ? 6 : firstDay - 1;
+  const dim = new Date(curY, curM + 1, 0).getDate();
+  const today = new Date(); today.setHours(0,0,0,0);
+
+  const aVerifier = [];
+  for (let d = 1; d <= dim; d++) {
+    const date = new Date(curY, curM, d);
+    if (date >= today && date.getDay() !== 0) {
+      const ds = curY + '-' + String(curM+1).padStart(2,'0') + '-' + String(d).padStart(2,'0');
+      aVerifier.push({ d, ds });
+    }
+  }
+
+  const slotsParJour = {};
+  const type = sel ? sel.id : 'seance_enfant';
+  await Promise.all(aVerifier.map(async ({ ds }) => {
+    try {
+      const r = await fetch('/calendar/slots?date=' + ds + '&type=' + type);
+      const data = await r.json();
+      slotsParJour[ds] = data.slots || [];
+    } catch { slotsParJour[ds] = []; }
+  }));
+
+  for (let i = 0; i < offset; i++) {
+    const el = document.createElement('div'); el.className = 'cal-day empty'; grid.appendChild(el);
+  }
+  for (let d = 1; d <= dim; d++) {
+    const date = new Date(curY, curM, d);
+    const el = document.createElement('div');
+    el.textContent = d;
+    const ds = curY + '-' + String(curM+1).padStart(2,'0') + '-' + String(d).padStart(2,'0');
+    if (date < today || date.getDay() === 0) {
+      el.className = 'cal-day disabled';
+    } else {
+      const slots = slotsParJour[ds] || [];
+      if (slots.length === 0) {
+        el.className = 'cal-day full';
+      } else {
+        el.className = 'cal-day avail';
+        if (ds === selDate) el.classList.add('selected');
+        el.onclick = () => loadSlots(ds, el);
+      }
+    }
+    grid.appendChild(el);
+  }
+}
+
+async function loadSlots(ds, cell) {
+  selDate = ds;
+  document.querySelectorAll('.cal-day').forEach(c => c.classList.remove('selected'));
+  cell.classList.add('selected');
+  const slotsDiv = document.getElementById('slots');
+  const label = document.getElementById('slotsLabel');
+  const d = new Date(ds + 'T12:00:00');
+  label.textContent = d.toLocaleDateString('fr-FR', { weekday:'long', day:'numeric', month:'long' });
+  slotsDiv.innerHTML = '<div class="loading"><div class="spinner"></div>Chargement...</div>';
+  document.getElementById('step3').style.display = 'none';
+  const r = await fetch('/calendar/slots?date=' + ds + '&type=' + sel.id);
+  const data = await r.json();
+  if (!data.slots || data.slots.length === 0) {
+    slotsDiv.innerHTML = '<p class="slots-empty">Aucun creneau disponible ce jour.</p>';
+    return;
+  }
+  slotsDiv.innerHTML = '';
+  data.slots.forEach(slot => {
+    const parts = slot.split(':');
+    const btn = document.createElement('button');
+    btn.className = 'slot'; btn.type = 'button';
+    btn.textContent = slot + ' - ' + String(parseInt(parts[0])+1).padStart(2,'0') + ':' + parts[1];
+    btn.onclick = () => selectSlot(slot, btn);
+    slotsDiv.appendChild(btn);
+  });
+}
+
+function selectSlot(heure, btn) {
+  document.querySelectorAll('.slot').forEach(s => s.classList.remove('selected'));
+  btn.classList.add('selected');
+  document.getElementById('fPrestationId').value = sel.id;
+  document.getElementById('fMode').value = selMode;
+  document.getElementById('fDate').value = selDate;
+  document.getElementById('fHeure').value = heure;
+  const d = new Date(selDate + 'T12:00:00');
+  const df = d.toLocaleDateString('fr-FR', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+  const ml = selMode === 'cabinet' ? "Au cabinet - Place d'Armes, Le Lamentin" : 'En visio - lien envoye par email';
+  document.getElementById('summary').innerHTML = '<strong>' + sel.titre + '</strong><br>' + df + ' a ' + heure + '<br>' + ml;
+  const s3 = document.getElementById('step3');
+  s3.style.display = 'block';
+  s3.scrollIntoView({ behavior:'smooth', block:'start' });
+}
+</script>
+</body>
+</html>
