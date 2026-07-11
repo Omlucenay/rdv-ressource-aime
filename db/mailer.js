@@ -29,6 +29,9 @@ const indicationsCabinet = mode => mode === 'cabinet' ? `
   </p>
 ` : '';
 
+const KARLA_PRESTATION_IDS = ['seance_enfant', 'seance_adulte'];
+const isKarla = resa => KARLA_PRESTATION_IDS.includes(resa.prestation_id);
+
 const SUMUP_LINK = 'https://pay.sumup.com/b2c/QKXGOT7O';
 
 // Séance individuelle en visio : pas de terminal SumUp physique, réglée en ligne après la séance
@@ -39,13 +42,19 @@ const lienPaiementVisio = resa => resa.mode === 'visio' && resa.prestation_id ==
 ` : '';
 
 async function sendConfirmationClient(resa) {
+  const karla = isKarla(resa);
+  const accent = karla ? '#1A4A5C' : '#4A8B85';
+  const fromName = karla ? 'Karla Ampigny Lucenay' : 'Ressource A.I.M.E';
+  const signatureName = karla ? 'Karla Ampigny Lucenay' : 'Olivier-Marie Lucenay';
+  const signatureRole = karla ? 'Psychologue clinicienne' : 'Ressource A.I.M.E';
+
   await transporter.sendMail({
-    from: `"Ressource A.I.M.E" <${process.env.SMTP_USER}>`,
+    from: `"${fromName}" <${process.env.SMTP_USER}>`,
     to: resa.email,
     subject: `Confirmation — ${resa.prestation_titre}`,
     html: `
       <div style="font-family:Georgia,serif;color:#2B4743;max-width:600px;margin:0 auto">
-        <h2 style="color:#4A8B85">Votre réservation est confirmée.</h2>
+        <h2 style="color:${accent}">Votre réservation est confirmée.</h2>
         <p>Bonjour ${resa.prenom},</p>
         <p>Voici le récapitulatif de votre rendez-vous :</p>
         <table style="width:100%;border-collapse:collapse;margin:20px 0">
@@ -55,11 +64,11 @@ async function sendConfirmationClient(resa) {
         </table>
         ${indicationsCabinet(resa.mode)}
         ${lienPaiementVisio(resa)}
-        <p style="font-style:italic;color:#4A8B85">
-          Vous pouvez <a href="${process.env.BASE_URL}/booking/gerer/${resa.id}" style="color:#4A8B85">annuler ou modifier votre rendez-vous</a> jusqu'à 48h avant.
+        <p style="font-style:italic;color:${accent}">
+          Vous pouvez <a href="${process.env.BASE_URL}/booking/gerer/${resa.id}" style="color:${accent}">annuler ou modifier votre rendez-vous</a> jusqu'à 48h avant.
         </p>
-        <p>À bientôt,<br><strong>Olivier-Marie Lucenay</strong><br>Ressource A.I.M.E<br><br>
-        ${resa.prestation_id === 'decouverte' ? '' : '<span style="color:#4A8B85">📞 06 96 69 60 21</span><br>'}
+        <p>À bientôt,<br><strong>${signatureName}</strong><br>${signatureRole}<br><br>
+        ${resa.prestation_id === 'decouverte' ? '' : `<span style="color:${accent}">📞 ${karla ? '06 96 75 65 02' : '06 96 69 60 21'}</span><br>`}
         <span style="font-size:13px;opacity:0.8">N'hésitez pas à nous contacter via WhatsApp si besoin.</span>
         </p>
       </div>
