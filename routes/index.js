@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const db = require('../db/connection');
 
 const PRESTATIONS = [
   {
@@ -68,17 +69,25 @@ const PRESTATIONS = [
   praticien: 'karla'
 }];
 
-router.get('/', (req, res) => {
+async function getPrefill(replaceId) {
+  if (!replaceId) return {};
+  const [rows] = await db.execute('SELECT prenom, nom, email, telephone FROM reservations WHERE id = ?', [replaceId]);
+  return rows[0] || {};
+}
+
+router.get('/', async (req, res) => {
   res.render('index', {
     prestations: PRESTATIONS.filter(p => p.id !== 'seance_enfant'),
-    stripePublicKey: process.env.STRIPE_PUBLIC_KEY
+    stripePublicKey: process.env.STRIPE_PUBLIC_KEY,
+    prefill: await getPrefill(req.query.replace)
   });
 });
 
-router.get('/decouverte', (req, res) => {
+router.get('/decouverte', async (req, res) => {
   res.render('index', {
     prestations: PRESTATIONS.filter(p => p.id === 'decouverte'),
-    stripePublicKey: process.env.STRIPE_PUBLIC_KEY
+    stripePublicKey: process.env.STRIPE_PUBLIC_KEY,
+    prefill: await getPrefill(req.query.replace)
   });
 });
 
