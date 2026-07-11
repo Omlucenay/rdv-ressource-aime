@@ -17,10 +17,10 @@ function formatDateFR(dateVal) {
   return `${jours[d.getUTCDay()]} ${d.getUTCDate()} ${mois[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
 }
 
-const modeLabel = mode => mode === 'cabinet'
-  ? 'Au cabinet — Centre commercial Place d\'Armes, à l\'étage'
-  : mode === 'telephone'
+const modeLabel = resa => resa.prestation_id === 'decouverte'
   ? 'Par téléphone — nous vous appellerons'
+  : resa.mode === 'cabinet'
+  ? 'Au cabinet — Centre commercial Place d\'Armes, à l\'étage'
   : 'En visio';
 
 const indicationsCabinet = mode => mode === 'cabinet' ? `
@@ -42,7 +42,7 @@ async function sendConfirmationClient(resa) {
         <table style="width:100%;border-collapse:collapse;margin:20px 0">
           <tr><td style="padding:10px;border-bottom:1px solid #eee"><strong>Prestation</strong></td><td style="padding:10px;border-bottom:1px solid #eee">${resa.prestation_titre}</td></tr>
           <tr><td style="padding:10px;border-bottom:1px solid #eee"><strong>Date</strong></td><td style="padding:10px;border-bottom:1px solid #eee">${formatDateFR(resa.date)} à ${resa.heure}</td></tr>
-          <tr><td style="padding:10px;border-bottom:1px solid #eee"><strong>Format</strong></td><td style="padding:10px;border-bottom:1px solid #eee">${modeLabel(resa.mode)}</td></tr>
+          <tr><td style="padding:10px;border-bottom:1px solid #eee"><strong>Format</strong></td><td style="padding:10px;border-bottom:1px solid #eee">${modeLabel(resa)}</td></tr>
         </table>
         ${indicationsCabinet(resa.mode)}
         <p style="font-style:italic;color:#4A8B85">
@@ -71,7 +71,7 @@ async function sendNotificationAdmin(resa) {
           <tr><td style="padding:8px;border-bottom:1px solid #eee"><strong>Email</strong></td><td style="padding:8px;border-bottom:1px solid #eee">${resa.email}</td></tr>
           <tr><td style="padding:8px;border-bottom:1px solid #eee"><strong>Téléphone</strong></td><td style="padding:8px;border-bottom:1px solid #eee">${resa.telephone}</td></tr>
           <tr><td style="padding:8px;border-bottom:1px solid #eee"><strong>Date</strong></td><td style="padding:8px;border-bottom:1px solid #eee">${formatDateFR(resa.date)} à ${resa.heure}</td></tr>
-          <tr><td style="padding:8px;border-bottom:1px solid #eee"><strong>Format</strong></td><td style="padding:8px;border-bottom:1px solid #eee">${modeLabel(resa.mode)}</td></tr>
+          <tr><td style="padding:8px;border-bottom:1px solid #eee"><strong>Format</strong></td><td style="padding:8px;border-bottom:1px solid #eee">${modeLabel(resa)}</td></tr>
         </table>
       </div>
     `

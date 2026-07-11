@@ -142,9 +142,7 @@ async function confirmerReservation(reservationId) {
 
     const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
 
-    const dateObj = new Date(resa.date);
-    dateObj.setHours(dateObj.getHours() + 4);
-    const dateStr = dateObj.toISOString().split('T')[0];
+    const dateStr = resa.date;
     const heureStr = String(resa.heure).substring(0, 5);
     const dateTimeStart = new Date(`${dateStr}T${heureStr}:00-04:00`);
     const dureeMin = resa.prestation_id === 'decouverte' ? 15 : 60;
@@ -155,8 +153,8 @@ async function confirmerReservation(reservationId) {
       : process.env.GOOGLE_CALENDAR_CABINET;
 
     const isCouple = PRESTATIONS_COUPLE.includes(resa.prestation_id);
-    const isVisio  = resa.mode === 'visio';
-    const isTelephone = resa.mode === 'telephone';
+    const isTelephone = resa.prestation_id === 'decouverte';
+    const isVisio  = !isTelephone && resa.mode === 'visio';
 
     // Titre de l'événement
     const nomEvenement = isCouple && resa.prenom_partenaire
