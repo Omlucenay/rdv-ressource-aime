@@ -82,7 +82,7 @@ router.get('/success', (req, res) => res.render('success'));
 router.get('/cancel', (req, res) => res.render('cancel'));
 router.get('/cancelled', (req, res) => res.render('cancelled'));
 
-router.get('/manage/:id', async (req, res) => {
+router.get('/gerer/:id', async (req, res) => {
   try {
     const [rows] = await db.execute('SELECT * FROM reservations WHERE id = ?', [req.params.id]);
     const resa = rows[0];
@@ -94,7 +94,21 @@ router.get('/manage/:id', async (req, res) => {
   }
 });
 
-router.get('/cancel/:id', (req, res) => res.redirect(`/booking/manage/${req.params.id}`));
+router.get('/manage/:id', (req, res) => res.redirect(`/booking/gerer/${req.params.id}`));
+
+router.get('/annuler/:id', async (req, res) => {
+  try {
+    const [rows] = await db.execute('SELECT * FROM reservations WHERE id = ?', [req.params.id]);
+    const resa = rows[0];
+    if (!resa) return res.status(404).send('Réservation introuvable');
+    res.render('annuler', { resa, formatDateFR });
+  } catch (err) {
+    console.error('Erreur annuler:', err);
+    res.status(500).send('Une erreur est survenue.');
+  }
+});
+
+router.get('/cancel/:id', (req, res) => res.redirect(`/booking/annuler/${req.params.id}`));
 
 async function annulerReservation(resa) {
   if (!resa || resa.statut === 'cancelled') return;
@@ -116,7 +130,7 @@ async function annulerReservation(resa) {
   await db.execute("UPDATE reservations SET statut = 'cancelled' WHERE id = ?", [resa.id]);
 }
 
-router.post('/cancel/:id', async (req, res) => {
+router.post('/annuler/:id', async (req, res) => {
   try {
     const [rows] = await db.execute('SELECT * FROM reservations WHERE id = ?', [req.params.id]);
     const resa = rows[0];
@@ -209,8 +223,8 @@ ${infoLieu}
 ────────────────────────
 
 Souhaitez-vous modifier ce rendez-vous ?
-❌ Annuler : ${process.env.BASE_URL}/booking/cancel/${resa.id}
-🔄 Modifier : ${process.env.BASE_URL}/booking/manage/${resa.id}
+❌ Annuler : ${process.env.BASE_URL}/booking/annuler/${resa.id}
+🔄 Modifier : ${process.env.BASE_URL}/booking/gerer/${resa.id}
 
 À bientôt !
 L'équipe de Ressource A.I.M.E${isTelephone ? '' : '\n📞 06 96 69 60 21'}`;

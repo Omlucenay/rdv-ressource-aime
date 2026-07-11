@@ -46,7 +46,7 @@ async function sendConfirmationClient(resa) {
         </table>
         ${indicationsCabinet(resa.mode)}
         <p style="font-style:italic;color:#4A8B85">
-          Vous pouvez <a href="${process.env.BASE_URL}/booking/manage/${resa.id}" style="color:#4A8B85">annuler ou modifier votre rendez-vous</a> jusqu'à 48h avant.
+          Vous pouvez <a href="${process.env.BASE_URL}/booking/gerer/${resa.id}" style="color:#4A8B85">annuler ou modifier votre rendez-vous</a> jusqu'à 48h avant.
         </p>
         <p>À bientôt,<br><strong>Olivier-Marie Lucenay</strong><br>Ressource A.I.M.E<br><br>
         ${resa.prestation_id === 'decouverte' ? '' : '<span style="color:#4A8B85">📞 06 96 69 60 21</span><br>'}
