@@ -227,7 +227,12 @@ Privilégiez l'entrée par la porte rose qui débouche sur la Pharmacie du centr
 Nous sommes dans la zone rouge, porte 211.
 Sonnez à l'interphone « Ressource A.I.M.E »`;
 
-    const tarifLigne = resa.prestation_id === 'decouverte' ? 'Gratuit' : 'à régler en fin de séance';
+    // Individuel en visio : pas de terminal SumUp physique, lien de paiement en ligne
+    const tarifLigne = isTelephone
+      ? 'Gratuit'
+      : isVisio && resa.prestation_id === 'seance_individuel'
+      ? 'à régler en ligne après la séance — <a href="https://pay.sumup.com/b2c/QKXGOT7O">cliquez ici pour payer</a>'
+      : 'à régler en fin de séance';
 
     const description = `${infoContact}
 ────────────────────────
