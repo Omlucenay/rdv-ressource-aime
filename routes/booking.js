@@ -213,6 +213,7 @@ async function confirmerReservation(reservationId) {
     const isCouple = PRESTATIONS_COUPLE.includes(resa.prestation_id);
     const isTelephone = resa.prestation_id === 'decouverte';
     const isVisio  = !isTelephone && resa.mode === 'visio';
+    const karla = isKarlaResa(resa);
 
     // Titre de l'événement — le séparateur " et " (pas "&") est requis par le parser n8n cabinet-calendar-to-notion
     const nomClientEvenement = isCouple && resa.prenom_partenaire
@@ -220,11 +221,14 @@ async function confirmerReservation(reservationId) {
       : `${resa.prenom} ${resa.nom}`;
     const summary = `${nomClientEvenement} et Centre Thérapeutique RESSOURCE A.I.M.E`;
 
-    // Type d'événement — le parser n8n lit cette ligne pour classer la séance (découverte/couple/visio/individuelle)
+    // Type d'événement — le parser n8n lit cette ligne pour classer la séance (découverte/couple/visio/individuelle).
+    // Karla n'est jamais sur le calendrier cabinet lu par ce parser (calendrier Karla séparé), donc son libellé n'a pas besoin de matcher le parser.
     const typeEvenement = isTelephone
       ? 'Appel découverte gratuit'
       : isCouple
       ? 'Séance couple'
+      : karla
+      ? resa.prestation_titre
       : isVisio
       ? 'Individuelle visio'
       : 'Séance individuelle';
