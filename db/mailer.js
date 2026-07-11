@@ -76,10 +76,12 @@ async function sendConfirmationClient(resa) {
   });
 }
 
+const KARLA_NOTIFICATION_EMAIL = 'k.ampigny@gmail.com';
+
 async function sendNotificationAdmin(resa) {
   await transporter.sendMail({
     from: `"RDV App" <${process.env.SMTP_USER}>`,
-    to: process.env.SMTP_USER,
+    to: isKarla(resa) ? KARLA_NOTIFICATION_EMAIL : process.env.SMTP_USER,
     subject: `Nouveau RDV — ${resa.prestation_titre} — ${resa.prenom} ${resa.nom}`,
     html: `
       <div style="font-family:Georgia,serif;color:#2B4743;max-width:600px;margin:0 auto">
