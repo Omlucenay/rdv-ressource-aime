@@ -183,23 +183,38 @@ async function confirmerReservation(reservationId) {
     const isTelephone = resa.prestation_id === 'decouverte';
     const isVisio  = !isTelephone && resa.mode === 'visio';
 
-    // Titre de l'événement
-    const nomEvenement = isCouple && resa.prenom_partenaire
-      ? `${resa.prenom} ${resa.nom} & ${resa.prenom_partenaire} ${resa.nom_partenaire}`
+    // Titre de l'événement — le séparateur " et " (pas "&") est requis par le parser n8n cabinet-calendar-to-notion
+    const nomClientEvenement = isCouple && resa.prenom_partenaire
+      ? `${resa.prenom} ${resa.nom} et ${resa.prenom_partenaire} ${resa.nom_partenaire}`
       : `${resa.prenom} ${resa.nom}`;
-    const summary = `${nomEvenement} et Centre Thérapeutique RESSOURCE A.I.M.E`;
+    const summary = `${nomClientEvenement} et Centre Thérapeutique RESSOURCE A.I.M.E`;
+
+    // Type d'événement — le parser n8n lit cette ligne pour classer la séance (découverte/couple/visio/individuelle)
+    const typeEvenement = isTelephone
+      ? 'Appel découverte gratuit'
+      : isCouple
+      ? 'Séance couple'
+      : isVisio
+      ? 'Individuelle visio'
+      : 'Séance individuelle';
 
     // Description selon le contexte
     const infoContact = isCouple && resa.prenom_partenaire ? `
+Nom d'événement
+${typeEvenement}
+
 👤 Contact principal : ${resa.prenom} ${resa.nom}
 📧 ${resa.email}
-📞 ${resa.telephone}
+📞 Téléphone : ${resa.telephone}
 
-👤 Partenaire : ${resa.prenom_partenaire} ${resa.nom_partenaire}${resa.telephone_partenaire ? `\n📞 ${resa.telephone_partenaire}` : ''}
+👤 Partenaire : ${resa.prenom_partenaire} ${resa.nom_partenaire}${resa.telephone_partenaire ? `\n📞 Téléphone : ${resa.telephone_partenaire}` : ''}
 ` : `
+Nom d'événement
+${typeEvenement}
+
 👤 ${resa.prenom} ${resa.nom}
 📧 ${resa.email}
-📞 ${resa.telephone}
+📞 Téléphone : ${resa.telephone}
 `;
 
     const infoLieu = isVisio ? `
