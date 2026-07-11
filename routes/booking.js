@@ -283,7 +283,7 @@ Souhaitez-vous modifier ce rendez-vous ?
 🔄 Modifier : ${process.env.BASE_URL}/booking/gerer/${resa.id}
 
 À bientôt !
-L'équipe de Ressource A.I.M.E${isTelephone ? '' : '\n📞 06 96 69 60 21'}`;
+${karla ? 'Karla Ampigny Lucenay' : "L'équipe de Ressource A.I.M.E"}${isTelephone ? '' : `\n📞 ${karla ? '06 96 75 65 02' : '06 96 69 60 21'}`}`;
 
     // Conférence Google Meet pour les visios
     const conferenceData = isVisio ? {
