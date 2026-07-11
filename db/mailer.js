@@ -19,6 +19,8 @@ function formatDateFR(dateVal) {
 
 const modeLabel = mode => mode === 'cabinet'
   ? 'Au cabinet — Centre commercial Place d\'Armes, à l\'étage'
+  : mode === 'telephone'
+  ? 'Par téléphone — nous vous appellerons'
   : 'En visio';
 
 const indicationsCabinet = mode => mode === 'cabinet' ? `

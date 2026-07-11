@@ -53,7 +53,7 @@
       <div class="card <%= p.featured ? 'featured' : '' %> <%= p.id === 'seance_enfant' ? 'enfant' : '' %> <%= (p.id === 'forfait_individuel' || p.id === 'forfait_couple') ? 'forfait' : '' %>" data-id="<%= p.id %>" data-prix="<%= p.prix %>" data-titre="<%= p.titre %>" data-paiement="<%= p.paiement %>" onclick="selectPrestation(this)">
         <p class="card-eyebrow"><%= p.eyebrow %></p>
         <h3 class="card-title"><%= p.titre %></h3>
-        <p class="card-meta"><%= p.duree %> · <%= p.mode === 'visio' ? 'Visio' : 'Cabinet ou visio' %></p>
+        <p class="card-meta"><%= p.duree %> · <%= p.mode === 'telephone' ? 'Téléphone' : 'Cabinet ou visio' %></p>
         <p class="card-desc"><%= p.description || '' %></p>
         <p class="card-price"><%= p.prixLabel %></p>
         <% if (p.echelon) { %>

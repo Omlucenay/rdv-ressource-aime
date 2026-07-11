@@ -7,7 +7,7 @@ const PRESTATIONS = [
     eyebrow: 'Première fois · Sans engagement',
     titre: 'Appel découverte',
     duree: '15 min',
-    mode: 'visio',
+    mode: 'telephone',
     prix: 0,
     prixLabel: 'Gratuit',
     paiement: false,

@@ -147,7 +147,8 @@ async function confirmerReservation(reservationId) {
     const dateStr = dateObj.toISOString().split('T')[0];
     const heureStr = String(resa.heure).substring(0, 5);
     const dateTimeStart = new Date(`${dateStr}T${heureStr}:00-04:00`);
-    const dateTimeEnd = new Date(dateTimeStart.getTime() + 60 * 60 * 1000);
+    const dureeMin = resa.prestation_id === 'decouverte' ? 15 : 60;
+    const dateTimeEnd = new Date(dateTimeStart.getTime() + dureeMin * 60 * 1000);
 
     const calId = ['seance_enfant', 'seance_adulte'].includes(resa.prestation_id)
       ? process.env.GOOGLE_CALENDAR_KARLA
@@ -155,11 +156,13 @@ async function confirmerReservation(reservationId) {
 
     const isCouple = PRESTATIONS_COUPLE.includes(resa.prestation_id);
     const isVisio  = resa.mode === 'visio';
+    const isTelephone = resa.mode === 'telephone';
 
     // Titre de l'événement
-    const summary = isCouple && resa.prenom_partenaire
-      ? `${resa.prestation_titre} — ${resa.prenom} ${resa.nom} & ${resa.prenom_partenaire} ${resa.nom_partenaire}`
-      : `${resa.prestation_titre} — ${resa.prenom} ${resa.nom}`;
+    const nomEvenement = isCouple && resa.prenom_partenaire
+      ? `${resa.prenom} ${resa.nom} & ${resa.prenom_partenaire} ${resa.nom_partenaire}`
+      : `${resa.prenom} ${resa.nom}`;
+    const summary = `${nomEvenement} et Centre Thérapeutique RESSOURCE A.I.M.E`;
 
     // Description selon le contexte
     const infoContact = isCouple && resa.prenom_partenaire ? `
@@ -175,18 +178,22 @@ async function confirmerReservation(reservationId) {
 `;
 
     const infoLieu = isVisio ? `
-💻 Séance en visio — Le lien Google Meet sera disponible dans cet événement.` : `
+💻 Séance en visio — Le lien Google Meet sera disponible dans cet événement.` : isTelephone ? `
+📞 Cet entretien téléphonique gratuit nous permettra de faire connaissance et d'explorer ensemble le parcours adapté à votre demande.
+Nous vous appellerons au numéro renseigné, à l'heure du rendez-vous.` : `
 📍 Accès au cabinet :
 Le cabinet se trouve à l'étage du Centre Commercial Place d'Armes.
 Privilégiez l'entrée par la porte rose qui débouche sur la Pharmacie du centre.
 Nous sommes dans la zone rouge, porte 211.
 Sonnez à l'interphone « Ressource A.I.M.E »`;
 
+    const tarifLigne = resa.prestation_id === 'decouverte' ? 'Gratuit' : 'à régler en fin de séance';
+
     const description = `${infoContact}
 ────────────────────────
 ${infoLieu}
 
-💳 Tarif : à régler en fin de séance
+💳 Tarif : ${tarifLigne}
 
 ────────────────────────
 
@@ -214,7 +221,7 @@ L'équipe de Ressource A.I.M.E
       attendees: [{ email: resa.email, displayName: `${resa.prenom} ${resa.nom}` }]
     };
 
-    if (!isVisio) {
+    if (!isVisio && !isTelephone) {
       eventBody.location = 'Centre Commercial Place d\'Armes, Le Lamentin, Martinique';
     }
 

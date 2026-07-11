@@ -34,7 +34,7 @@ function selectPrestation(el) {
   const modeSection = document.getElementById('modeSection');
   if (state.prestation.id === 'decouverte' || state.prestation.id === 'seance_enfant') {
     modeSection.style.display = 'none';
-    state.mode = state.prestation.id === 'decouverte' ? 'visio' : 'cabinet';
+    state.mode = state.prestation.id === 'decouverte' ? 'telephone' : 'cabinet';
   } else {
     modeSection.style.display = 'grid';
   }
@@ -204,7 +204,7 @@ function updateSummary() {
  const [dy, dm, dd] = state.date.split('-').map(Number);
 const d = new Date(dy, dm - 1, dd);
 const dateLabel = d.toLocaleDateString('fr-FR', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
-  const modeLabel = state.mode === 'cabinet' ? 'Cabinet du Lamentin' : 'Visio';
+  const modeLabel = state.mode === 'cabinet' ? 'Cabinet du Lamentin' : state.mode === 'telephone' ? 'Téléphone' : 'Visio';
 
   let prixLabel;
   if (state.prestation.id === 'seance_enfant') prixLabel = 'Règlement sur place';
