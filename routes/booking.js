@@ -19,16 +19,16 @@ const PRESTATIONS_COUPLE = ['seance_couple', 'forfait_couple'];
 
 router.post('/create', async (req, res) => {
   const { prestationId, mode, date, heure, nom, prenom, email, telephone,
-          prenom_partenaire, nom_partenaire, telephone_partenaire } = req.body;
+          prenom_partenaire, nom_partenaire, telephone_partenaire, replace_id } = req.body;
   const prestation = PRESTATIONS.find(p => p.id === prestationId);
   if (!prestation) return res.status(400).send('Prestation inconnue');
 
   try {
     const [result] = await db.execute(
-      `INSERT INTO reservations (prestation_id, prestation_titre, mode, date, heure, nom, prenom, email, telephone, prenom_partenaire, nom_partenaire, telephone_partenaire, statut, created_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', NOW())`,
+      `INSERT INTO reservations (prestation_id, prestation_titre, mode, date, heure, nom, prenom, email, telephone, prenom_partenaire, nom_partenaire, telephone_partenaire, replace_id, statut, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', NOW())`,
       [prestationId, prestation.titre, mode, date, heure, nom, prenom, email, telephone,
-       prenom_partenaire || null, nom_partenaire || null, telephone_partenaire || null]
+       prenom_partenaire || null, nom_partenaire || null, telephone_partenaire || null, replace_id || null]
     );
     const reservationId = result.insertId;
 
@@ -96,27 +96,33 @@ router.get('/manage/:id', async (req, res) => {
 
 router.get('/cancel/:id', (req, res) => res.redirect(`/booking/manage/${req.params.id}`));
 
+async function annulerReservation(resa) {
+  if (!resa || resa.statut === 'cancelled') return;
+
+  const tokens = await getTokens();
+  if (tokens && resa.google_event_id) {
+    oauth2Client.setCredentials(tokens);
+    const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
+    const calId = ['seance_enfant', 'seance_adulte'].includes(resa.prestation_id)
+      ? process.env.GOOGLE_CALENDAR_KARLA
+      : process.env.GOOGLE_CALENDAR_CABINET;
+    await calendar.events.delete({
+      calendarId: calId,
+      eventId: resa.google_event_id,
+      sendUpdates: 'all'
+    }).catch(() => {});
+  }
+
+  await db.execute("UPDATE reservations SET statut = 'cancelled' WHERE id = ?", [resa.id]);
+}
+
 router.post('/cancel/:id', async (req, res) => {
   try {
     const [rows] = await db.execute('SELECT * FROM reservations WHERE id = ?', [req.params.id]);
     const resa = rows[0];
     if (!resa || resa.statut === 'cancelled') return res.redirect('/booking/cancelled');
 
-    const tokens = await getTokens();
-    if (tokens && resa.google_event_id) {
-      oauth2Client.setCredentials(tokens);
-      const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
-      const calId = ['seance_enfant', 'seance_adulte'].includes(resa.prestation_id)
-        ? process.env.GOOGLE_CALENDAR_KARLA
-        : process.env.GOOGLE_CALENDAR_CABINET;
-      await calendar.events.delete({
-        calendarId: calId,
-        eventId: resa.google_event_id,
-        sendUpdates: 'all'
-      }).catch(() => {});
-    }
-
-    await db.execute("UPDATE reservations SET statut = 'cancelled' WHERE id = ?", [resa.id]);
+    await annulerReservation(resa);
     res.redirect('/booking/cancelled');
   } catch (err) {
     console.error('Erreur annulation:', err);
@@ -128,6 +134,11 @@ async function confirmerReservation(reservationId) {
   const [rows] = await db.execute('SELECT * FROM reservations WHERE id = ?', [reservationId]);
   const resa = rows[0];
   if (!resa) return;
+
+  if (resa.replace_id) {
+    const [oldRows] = await db.execute('SELECT * FROM reservations WHERE id = ?', [resa.replace_id]);
+    await annulerReservation(oldRows[0]);
+  }
 
   const tokens = await getTokens();
   if (tokens) {

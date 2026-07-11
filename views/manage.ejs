@@ -24,7 +24,7 @@
     </p>
 
     <div style="display:flex;flex-direction:column;gap:16px;max-width:320px;margin:0 auto">
-      <a href="/" style="display:block;background:#2B4743;color:#F6F3EE;padding:14px 24px;border-radius:8px;text-decoration:none;font-family:'DM Sans',sans-serif;font-size:16px">
+      <a href="<%= resa.prestation_id === 'decouverte' ? `/decouverte?replace=${resa.id}` : `/?prestation=${resa.prestation_id}&replace=${resa.id}` %>" style="display:block;background:#2B4743;color:#F6F3EE;padding:14px 24px;border-radius:8px;text-decoration:none;font-family:'DM Sans',sans-serif;font-size:16px">
         Prendre un nouveau créneau
       </a>
 

@@ -227,3 +227,27 @@ const dateLabel = d.toLocaleDateString('fr-FR', { weekday:'long', day:'numeric',
   document.getElementById('fDate').value = state.date;
   document.getElementById('fHeure').value = state.heure;
 }
+
+// Pré-sélection depuis un lien "reprendre un créneau" (?prestation=X&replace=Y)
+document.addEventListener('DOMContentLoaded', () => {
+  const params = new URLSearchParams(window.location.search);
+  const prestationId = params.get('prestation');
+  const replaceId = params.get('replace');
+
+  if (replaceId) {
+    const fReplaceId = document.getElementById('fReplaceId');
+    if (fReplaceId) fReplaceId.value = replaceId;
+  }
+
+  const cards = document.querySelectorAll('.card, .card-wide');
+  let target = null;
+  if (prestationId) {
+    target = [...cards].find(c => c.dataset.id === prestationId);
+  } else if (cards.length === 1) {
+    target = cards[0];
+  }
+  if (target) {
+    selectPrestation(target);
+    document.getElementById('step2')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+});

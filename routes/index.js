@@ -75,5 +75,12 @@ router.get('/', (req, res) => {
   });
 });
 
+router.get('/decouverte', (req, res) => {
+  res.render('index', {
+    prestations: PRESTATIONS.filter(p => p.id === 'decouverte'),
+    stripePublicKey: process.env.STRIPE_PUBLIC_KEY
+  });
+});
+
 module.exports = router;
 module.exports.PRESTATIONS = PRESTATIONS;
