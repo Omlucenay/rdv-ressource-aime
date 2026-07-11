@@ -10,6 +10,16 @@ const transporter = nodemailer.createTransport({
   }
 });
 
+const transporterKarla = nodemailer.createTransport({
+  host: process.env.SMTP_HOST,
+  port: parseInt(process.env.SMTP_PORT),
+  secure: true,
+  auth: {
+    user: process.env.SMTP_USER_KARLA,
+    pass: process.env.SMTP_PASSWORD_KARLA
+  }
+});
+
 function formatDateFR(dateVal) {
   const jours = ['dimanche','lundi','mardi','mercredi','jeudi','vendredi','samedi'];
   const mois = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
@@ -48,8 +58,8 @@ async function sendConfirmationClient(resa) {
   const signatureName = karla ? 'Karla Ampigny Lucenay' : 'Olivier-Marie Lucenay';
   const signatureRole = karla ? 'Psychologue clinicienne' : 'Ressource A.I.M.E';
 
-  await transporter.sendMail({
-    from: `"${fromName}" <${process.env.SMTP_USER}>`,
+  await (karla ? transporterKarla : transporter).sendMail({
+    from: `"${fromName}" <${karla ? process.env.SMTP_USER_KARLA : process.env.SMTP_USER}>`,
     to: resa.email,
     subject: `Confirmation — ${resa.prestation_titre}`,
     html: `
