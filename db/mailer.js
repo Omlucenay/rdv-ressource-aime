@@ -29,6 +29,15 @@ const indicationsCabinet = mode => mode === 'cabinet' ? `
   </p>
 ` : '';
 
+const SUMUP_LINK = 'https://pay.sumup.com/b2c/QKXGOT7O';
+
+// Séance individuelle en visio : pas de terminal SumUp physique, réglée en ligne après la séance
+const lienPaiementVisio = resa => resa.mode === 'visio' && resa.prestation_id === 'seance_individuel' ? `
+  <p style="background:#F0D4CC;padding:14px 18px;border-radius:8px;margin:20px 0;color:#2B4743">
+    <strong>Règlement de la séance :</strong> après notre échange, vous pouvez régler directement en ligne via <a href="${SUMUP_LINK}" style="color:#2B4743">ce lien de paiement</a>.
+  </p>
+` : '';
+
 async function sendConfirmationClient(resa) {
   await transporter.sendMail({
     from: `"Ressource A.I.M.E" <${process.env.SMTP_USER}>`,
@@ -45,6 +54,7 @@ async function sendConfirmationClient(resa) {
           <tr><td style="padding:10px;border-bottom:1px solid #eee"><strong>Format</strong></td><td style="padding:10px;border-bottom:1px solid #eee">${modeLabel(resa)}</td></tr>
         </table>
         ${indicationsCabinet(resa.mode)}
+        ${lienPaiementVisio(resa)}
         <p style="font-style:italic;color:#4A8B85">
           Vous pouvez <a href="${process.env.BASE_URL}/booking/gerer/${resa.id}" style="color:#4A8B85">annuler ou modifier votre rendez-vous</a> jusqu'à 48h avant.
         </p>
