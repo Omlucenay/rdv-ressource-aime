@@ -200,8 +200,7 @@ Souhaitez-vous modifier ce rendez-vous ?
 🔄 Modifier : ${process.env.BASE_URL}/booking/manage/${resa.id}
 
 À bientôt !
-L'équipe de Ressource A.I.M.E
-📞 06 96 69 60 21`;
+L'équipe de Ressource A.I.M.E${isTelephone ? '' : '\n📞 06 96 69 60 21'}`;
 
     // Conférence Google Meet pour les visios
     const conferenceData = isVisio ? {
