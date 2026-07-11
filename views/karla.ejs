@@ -201,6 +201,16 @@ body{font-family:'Inter',sans-serif;background:var(--cream);color:var(--ink);min
           <input type="text" name="nom" required placeholder="Ton nom">
         </div>
       </div>
+      <div class="form-row" id="childFields" style="display:none">
+        <div class="form-group">
+          <label>Prénom de l'enfant *</label>
+          <input type="text" name="enfant_prenom" id="fEnfantPrenom" placeholder="Prénom de l'enfant">
+        </div>
+        <div class="form-group">
+          <label>Âge de l'enfant *</label>
+          <input type="number" name="enfant_age" id="fEnfantAge" min="0" max="17" placeholder="Âge">
+        </div>
+      </div>
       <div class="form-row">
         <div class="form-group">
           <label>Email *</label>
@@ -234,6 +244,10 @@ function selectCard(el) {
   el.classList.add('selected');
   sel = { id: el.dataset.id, titre: el.dataset.titre };
   selDate = null;
+  const isEnfant = sel.id === 'seance_enfant';
+  document.getElementById('childFields').style.display = isEnfant ? 'grid' : 'none';
+  document.getElementById('fEnfantPrenom').required = isEnfant;
+  document.getElementById('fEnfantAge').required = isEnfant;
   document.getElementById('step3').style.display = 'none';
   const s2 = document.getElementById('step2');
   s2.style.display = 'block';

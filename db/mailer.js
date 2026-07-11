@@ -91,6 +91,7 @@ async function sendNotificationAdmin(resa) {
           <tr><td style="padding:8px;border-bottom:1px solid #eee"><strong>Client</strong></td><td style="padding:8px;border-bottom:1px solid #eee">${resa.prenom} ${resa.nom}</td></tr>
           <tr><td style="padding:8px;border-bottom:1px solid #eee"><strong>Email</strong></td><td style="padding:8px;border-bottom:1px solid #eee">${resa.email}</td></tr>
           <tr><td style="padding:8px;border-bottom:1px solid #eee"><strong>Téléphone</strong></td><td style="padding:8px;border-bottom:1px solid #eee">${resa.telephone}</td></tr>
+          ${resa.prestation_id === 'seance_enfant' && resa.enfant_prenom ? `<tr><td style="padding:8px;border-bottom:1px solid #eee"><strong>Enfant</strong></td><td style="padding:8px;border-bottom:1px solid #eee">${resa.enfant_prenom}${resa.enfant_age ? ` (${resa.enfant_age} ans)` : ''}</td></tr>` : ''}
           <tr><td style="padding:8px;border-bottom:1px solid #eee"><strong>Date</strong></td><td style="padding:8px;border-bottom:1px solid #eee">${formatDateFR(resa.date)} à ${resa.heure}</td></tr>
           <tr><td style="padding:8px;border-bottom:1px solid #eee"><strong>Format</strong></td><td style="padding:8px;border-bottom:1px solid #eee">${modeLabel(resa)}</td></tr>
         </table>

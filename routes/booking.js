@@ -19,16 +19,18 @@ const PRESTATIONS_COUPLE = ['seance_couple', 'forfait_couple'];
 
 router.post('/create', async (req, res) => {
   const { prestationId, mode, date, heure, nom, prenom, email, telephone,
-          prenom_partenaire, nom_partenaire, telephone_partenaire, replace_id } = req.body;
-  const prestation = PRESTATIONS.find(p => p.id === prestationId);
+          prenom_partenaire, nom_partenaire, telephone_partenaire, replace_id,
+          enfant_prenom, enfant_age } = req.body;
+  const prestation = PRESTATIONS.find(p => p.id === prestationId) || KARLA_PRESTATIONS.find(p => p.id === prestationId);
   if (!prestation) return res.status(400).send('Prestation inconnue');
 
   try {
     const [result] = await db.execute(
-      `INSERT INTO reservations (prestation_id, prestation_titre, mode, date, heure, nom, prenom, email, telephone, prenom_partenaire, nom_partenaire, telephone_partenaire, replace_id, statut, created_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', NOW())`,
+      `INSERT INTO reservations (prestation_id, prestation_titre, mode, date, heure, nom, prenom, email, telephone, prenom_partenaire, nom_partenaire, telephone_partenaire, replace_id, enfant_prenom, enfant_age, statut, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', NOW())`,
       [prestationId, prestation.titre, mode, date, heure, nom, prenom, email, telephone,
-       prenom_partenaire || null, nom_partenaire || null, telephone_partenaire || null, replace_id || null]
+       prenom_partenaire || null, nom_partenaire || null, telephone_partenaire || null, replace_id || null,
+       enfant_prenom || null, enfant_age || null]
     );
     const reservationId = result.insertId;
 
@@ -215,6 +217,7 @@ ${typeEvenement}
 👤 ${resa.prenom} ${resa.nom}
 📧 ${resa.email}
 📞 Téléphone : ${resa.telephone}
+${resa.prestation_id === 'seance_enfant' && resa.enfant_prenom ? `\n👶 Enfant : ${resa.enfant_prenom}${resa.enfant_age ? ` (${resa.enfant_age} ans)` : ''}` : ''}
 `;
 
     const infoLieu = isVisio ? `

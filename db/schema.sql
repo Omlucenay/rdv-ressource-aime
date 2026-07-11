@@ -12,5 +12,7 @@ CREATE TABLE IF NOT EXISTS reservations (
   statut ENUM('pending', 'confirmed', 'cancelled') DEFAULT 'pending',
   stripe_session_id VARCHAR(200),
   replace_id INT,
+  enfant_prenom VARCHAR(100),
+  enfant_age TINYINT,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
