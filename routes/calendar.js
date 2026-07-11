@@ -88,8 +88,8 @@ router.get('/slots', async (req, res) => {
       return res.json({ slots });
     }
 
-    // --- SÉANCE ENFANT : créneaux depuis le calendrier Karla ---
-    if (type === 'seance_enfant') {
+    // --- SÉANCES KARLA (enfant/ado + adulte) : créneaux depuis le calendrier Karla ---
+    if (type === 'seance_enfant' || type === 'seance_adulte') {
       const [eventsKarla, eventsCabinet] = await Promise.all([
         getEvents(CALENDAR_KARLA,   dateMin, dateMax, tokens),
         getEvents(CALENDAR_CABINET, dateMin, dateMax, tokens)
