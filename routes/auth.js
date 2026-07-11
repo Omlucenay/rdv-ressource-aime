@@ -41,7 +41,22 @@ router.get('/google/callback', async (req, res) => {
 async function getTokens() {
   const [rows] = await db.execute('SELECT tokens FROM google_tokens WHERE id = 1');
   if (rows.length === 0) return null;
-  return JSON.parse(rows[0].tokens);
+  const tokens = JSON.parse(rows[0].tokens);
+  oauth2Client.setCredentials(tokens);
+  if (tokens.expiry_date && tokens.expiry_date < Date.now() + 60000) {
+    try {
+      const { credentials } = await oauth2Client.refreshAccessToken();
+      await db.execute(
+        'INSERT INTO google_tokens (id, tokens) VALUES (1, ?) ON DUPLICATE KEY UPDATE tokens = ?',
+        [JSON.stringify(credentials), JSON.stringify(credentials)]
+      );
+      return credentials;
+    } catch (err) {
+      console.error('Erreur refresh token:', err);
+      return null;
+    }
+  }
+  return tokens;
 }
 
 module.exports = router;
