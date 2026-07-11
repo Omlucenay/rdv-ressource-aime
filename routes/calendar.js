@@ -17,6 +17,7 @@ const DISPO_CABINET = {
 
 // Plages horaires appel découverte (lundi, mardi, mercredi 18h-20h)
 const DISPO_DECOUVERTE = {
+  1: [{ start: 18, end: 20 }],
   2: [{ start: 18, end: 20 }],
   3: [{ start: 18, end: 20 }]
 };
