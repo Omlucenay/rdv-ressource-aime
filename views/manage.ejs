@@ -15,7 +15,7 @@
       <table style="width:100%;border-collapse:collapse">
         <tr><td style="padding:8px 0;border-bottom:1px solid #e0ddd8;color:#2B4743;opacity:0.7;width:40%">Prestation</td><td style="padding:8px 0;border-bottom:1px solid #e0ddd8;color:#2B4743"><strong><%= resa.prestation_titre %></strong></td></tr>
         <tr><td style="padding:8px 0;border-bottom:1px solid #e0ddd8;color:#2B4743;opacity:0.7">Date</td><td style="padding:8px 0;border-bottom:1px solid #e0ddd8;color:#2B4743"><strong><%= formatDateFR(resa.date) %> à <%= String(resa.heure).substring(0,5) %></strong></td></tr>
-        <tr><td style="padding:8px 0;color:#2B4743;opacity:0.7">Format</td><td style="padding:8px 0;color:#2B4743"><strong><%= resa.mode === 'cabinet' ? 'Au cabinet' : 'En visio' %></strong></td></tr>
+        <tr><td style="padding:8px 0;color:#2B4743;opacity:0.7">Format</td><td style="padding:8px 0;color:#2B4743"><strong><%= resa.prestation_id === 'decouverte' ? 'Par téléphone' : (resa.mode === 'cabinet' ? 'Au cabinet' : 'En visio') %></strong></td></tr>
       </table>
     </div>
 

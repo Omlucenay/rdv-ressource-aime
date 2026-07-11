@@ -94,6 +94,8 @@ router.get('/manage/:id', async (req, res) => {
   }
 });
 
+router.get('/cancel/:id', (req, res) => res.redirect(`/booking/manage/${req.params.id}`));
+
 router.post('/cancel/:id', async (req, res) => {
   try {
     const [rows] = await db.execute('SELECT * FROM reservations WHERE id = ?', [req.params.id]);
