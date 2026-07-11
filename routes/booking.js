@@ -16,6 +16,8 @@ function formatDateFR(dateVal) {
 }
 
 const PRESTATIONS_COUPLE = ['seance_couple', 'forfait_couple'];
+const KARLA_PRESTATION_IDS = KARLA_PRESTATIONS.map(p => p.id);
+const isKarlaResa = resa => resa && KARLA_PRESTATION_IDS.includes(resa.prestation_id);
 
 router.post('/create', async (req, res) => {
   const { prestationId, mode, date, heure, nom, prenom, email, telephone,
@@ -80,16 +82,41 @@ router.post('/create', async (req, res) => {
   }
 });
 
-router.get('/success', (req, res) => res.render('success'));
+router.get('/success', async (req, res) => {
+  try {
+    const { rid, session_id } = req.query;
+    let resa = null;
+    if (rid) {
+      const [rows] = await db.execute('SELECT * FROM reservations WHERE id = ?', [rid]);
+      resa = rows[0];
+    } else if (session_id) {
+      const [rows] = await db.execute('SELECT * FROM reservations WHERE stripe_session_id = ?', [session_id]);
+      resa = rows[0];
+    }
+    res.render('success', { homeLink: isKarlaResa(resa) ? '/karla' : '/' });
+  } catch (err) {
+    console.error('Erreur success:', err);
+    res.render('success', { homeLink: '/' });
+  }
+});
+// Séances Karla non payantes (paiement Stripe non utilisé) : /cancel n'est jamais atteint par ce parcours.
 router.get('/cancel', (req, res) => res.render('cancel'));
-router.get('/cancelled', (req, res) => res.render('cancelled'));
+router.get('/cancelled', (req, res) => {
+  const homeLink = req.query.home === '/karla' ? '/karla' : '/';
+  res.render('cancelled', { homeLink });
+});
 
 router.get('/gerer/:id', async (req, res) => {
   try {
     const [rows] = await db.execute('SELECT * FROM reservations WHERE id = ?', [req.params.id]);
     const resa = rows[0];
     if (!resa) return res.status(404).send('Réservation introuvable');
-    res.render('manage', { resa, formatDateFR });
+    const karla = isKarlaResa(resa);
+    const homeLink = karla ? '/karla' : '/';
+    const newSlotLink = resa.prestation_id === 'decouverte'
+      ? `/decouverte?replace=${resa.id}`
+      : karla ? '/karla' : `/?prestation=${resa.prestation_id}&replace=${resa.id}`;
+    res.render('manage', { resa, formatDateFR, homeLink, newSlotLink });
   } catch (err) {
     console.error('Erreur manage:', err);
     res.status(500).send('Une erreur est survenue.');
@@ -103,7 +130,7 @@ router.get('/annuler/:id', async (req, res) => {
     const [rows] = await db.execute('SELECT * FROM reservations WHERE id = ?', [req.params.id]);
     const resa = rows[0];
     if (!resa) return res.status(404).send('Réservation introuvable');
-    res.render('annuler', { resa, formatDateFR });
+    res.render('annuler', { resa, formatDateFR, homeLink: isKarlaResa(resa) ? '/karla' : '/' });
   } catch (err) {
     console.error('Erreur annuler:', err);
     res.status(500).send('Une erreur est survenue.');
@@ -136,10 +163,11 @@ router.post('/annuler/:id', async (req, res) => {
   try {
     const [rows] = await db.execute('SELECT * FROM reservations WHERE id = ?', [req.params.id]);
     const resa = rows[0];
-    if (!resa || resa.statut === 'cancelled') return res.redirect('/booking/cancelled');
+    const home = isKarlaResa(resa) ? '/karla' : '/';
+    if (!resa || resa.statut === 'cancelled') return res.redirect(`/booking/cancelled?home=${encodeURIComponent(home)}`);
 
     await annulerReservation(resa);
-    res.redirect('/booking/cancelled');
+    res.redirect(`/booking/cancelled?home=${encodeURIComponent(home)}`);
   } catch (err) {
     console.error('Erreur annulation:', err);
     res.status(500).send('Une erreur est survenue lors de l\'annulation.');
