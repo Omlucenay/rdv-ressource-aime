@@ -6,6 +6,7 @@ const { oauth2Client, getTokens } = require('./auth');
 const CALENDAR_CABINET = process.env.GOOGLE_CALENDAR_CABINET;
 const CALENDAR_KARLA   = process.env.GOOGLE_CALENDAR_KARLA;
 const CALENDAR_APPEL   = process.env.GOOGLE_CALENDAR_APPEL;
+const CALENDAR_PERSO   = process.env.GOOGLE_CALENDAR_PERSO;
 
 // Plages horaires cabinet (séances individuelles, couples, forfaits)
 const DISPO_CABINET = {
@@ -65,11 +66,12 @@ router.get('/slots', async (req, res) => {
       const regleJour = DISPO_DECOUVERTE[jourSemaine];
       if (!regleJour) return res.json({ slots: [] });
 
-      const [eventsCabinet, eventsAppel] = await Promise.all([
+      const [eventsCabinet, eventsAppel, eventsPerso] = await Promise.all([
         getEvents(CALENDAR_CABINET, dateMin, dateMax, tokens),
-        getEvents(CALENDAR_APPEL,   dateMin, dateMax, tokens)
+        getEvents(CALENDAR_APPEL,   dateMin, dateMax, tokens),
+        getEvents(CALENDAR_PERSO,   dateMin, dateMax, tokens)
       ]);
-      const tousLesEvents = [...eventsCabinet, ...eventsAppel];
+      const tousLesEvents = [...eventsCabinet, ...eventsAppel, ...eventsPerso];
 
       const slots = [];
       regleJour.forEach(plage => {
@@ -117,12 +119,13 @@ router.get('/slots', async (req, res) => {
     const regleJour = DISPO_CABINET[jourSemaine];
     if (!regleJour) return res.json({ slots: [] });
 
-    const [eventsCabinet, eventsKarla] = await Promise.all([
+    const [eventsCabinet, eventsKarla, eventsPerso] = await Promise.all([
       getEvents(CALENDAR_CABINET, dateMin, dateMax, tokens),
-      getEvents(CALENDAR_KARLA,   dateMin, dateMax, tokens)
+      getEvents(CALENDAR_KARLA,   dateMin, dateMax, tokens),
+      getEvents(CALENDAR_PERSO,   dateMin, dateMax, tokens)
     ]);
 
-    const tousLesEvents = [...eventsCabinet, ...eventsKarla];
+    const tousLesEvents = [...eventsCabinet, ...eventsKarla, ...eventsPerso];
     const slots = [];
 
     regleJour.forEach(plage => {
@@ -173,11 +176,12 @@ router.get('/available-days', async (req, res) => {
     const duree    = type === 'decouverte' ? DUREE_DECOUVERTE : DUREE_SEANCE;
     const secondCalendar = type === 'decouverte' ? CALENDAR_APPEL : CALENDAR_KARLA;
 
-    const [eventsCabinet, eventsSecond] = await Promise.all([
+    const [eventsCabinet, eventsSecond, eventsPerso] = await Promise.all([
       getEvents(CALENDAR_CABINET, dateMin, dateMax, tokens),
-      getEvents(secondCalendar,   dateMin, dateMax, tokens)
+      getEvents(secondCalendar,   dateMin, dateMax, tokens),
+      getEvents(CALENDAR_PERSO,   dateMin, dateMax, tokens)
     ]);
-    const tousLesEvents = [...eventsCabinet, ...eventsSecond];
+    const tousLesEvents = [...eventsCabinet, ...eventsSecond, ...eventsPerso];
 
     const days = [];
     for (let day = 1; day <= lastDay; day++) {
