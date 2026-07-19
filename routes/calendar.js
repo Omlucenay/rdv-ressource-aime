@@ -38,6 +38,17 @@ async function getEvents(calendarId, dateMin, dateMax, tokens) {
   return res.data.items || [];
 }
 
+// Calendrier perso (MOOR) : source annexe pour bloquer les créneaux, ne doit
+// jamais faire tomber la résa si l'accès casse (partage retiré, etc.)
+async function getEventsPerso(dateMin, dateMax, tokens) {
+  try {
+    return await getEvents(CALENDAR_PERSO, dateMin, dateMax, tokens);
+  } catch (err) {
+    console.error('Erreur lecture calendrier perso (MOOR):', err.message);
+    return [];
+  }
+}
+
 function estBloque(slotStart, slotEnd, events) {
   return events.some(ev => {
     if (ev.status === 'cancelled') return false;
@@ -69,7 +80,7 @@ router.get('/slots', async (req, res) => {
       const [eventsCabinet, eventsAppel, eventsPerso] = await Promise.all([
         getEvents(CALENDAR_CABINET, dateMin, dateMax, tokens),
         getEvents(CALENDAR_APPEL,   dateMin, dateMax, tokens),
-        getEvents(CALENDAR_PERSO,   dateMin, dateMax, tokens)
+        getEventsPerso(dateMin, dateMax, tokens)
       ]);
       const tousLesEvents = [...eventsCabinet, ...eventsAppel, ...eventsPerso];
 
@@ -122,7 +133,7 @@ router.get('/slots', async (req, res) => {
     const [eventsCabinet, eventsKarla, eventsPerso] = await Promise.all([
       getEvents(CALENDAR_CABINET, dateMin, dateMax, tokens),
       getEvents(CALENDAR_KARLA,   dateMin, dateMax, tokens),
-      getEvents(CALENDAR_PERSO,   dateMin, dateMax, tokens)
+      getEventsPerso(dateMin, dateMax, tokens)
     ]);
 
     const tousLesEvents = [...eventsCabinet, ...eventsKarla, ...eventsPerso];
@@ -179,7 +190,7 @@ router.get('/available-days', async (req, res) => {
     const [eventsCabinet, eventsSecond, eventsPerso] = await Promise.all([
       getEvents(CALENDAR_CABINET, dateMin, dateMax, tokens),
       getEvents(secondCalendar,   dateMin, dateMax, tokens),
-      getEvents(CALENDAR_PERSO,   dateMin, dateMax, tokens)
+      getEventsPerso(dateMin, dateMax, tokens)
     ]);
     const tousLesEvents = [...eventsCabinet, ...eventsSecond, ...eventsPerso];
 
