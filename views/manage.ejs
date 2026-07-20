@@ -28,7 +28,7 @@
         Prendre un nouveau créneau
       </a>
 
-      <form method="POST" action="/booking/annuler/<%= resa.id %>" onsubmit="return confirm('Êtes-vous sûr de vouloir annuler ce rendez-vous ?')">
+      <form method="POST" action="/booking/annuler/<%= resa.id %><%= token ? `?t=${token}` : '' %>" onsubmit="return confirm('Êtes-vous sûr de vouloir annuler ce rendez-vous ?')">
         <button type="submit" style="width:100%;background:transparent;border:1.5px solid #C0392B;color:#C0392B;padding:14px 24px;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:16px;cursor:pointer">
           Annuler ce rendez-vous
         </button>

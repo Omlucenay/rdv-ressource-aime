@@ -75,7 +75,7 @@ async function sendConfirmationClient(resa) {
         ${indicationsCabinet(resa.mode)}
         ${lienPaiementVisio(resa)}
         <p style="font-style:italic;color:${accent}">
-          Vous pouvez <a href="${process.env.BASE_URL}/booking/gerer/${resa.id}" style="color:${accent}">annuler ou modifier votre rendez-vous</a> jusqu'à 48h avant.
+          Vous pouvez <a href="${process.env.BASE_URL}/booking/gerer/${resa.id}${resa.manage_token ? `?t=${resa.manage_token}` : ''}" style="color:${accent}">annuler ou modifier votre rendez-vous</a> jusqu'à 48h avant.
         </p>
         <p>À bientôt,<br><strong>${signatureName}</strong><br>${signatureRole}<br><br>
         ${resa.prestation_id === 'decouverte' ? '' : `<span style="color:${accent}">📞 ${karla ? '06 96 75 65 02' : '06 96 69 60 21'}</span><br>`}

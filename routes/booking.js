@@ -1,4 +1,5 @@
 const express = require('express');
+const crypto = require('crypto');
 const router = express.Router();
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const { google } = require('googleapis');
@@ -19,6 +20,7 @@ const PRESTATIONS_COUPLE = ['seance_couple', 'forfait_couple'];
 const KARLA_PRESTATION_IDS = KARLA_PRESTATIONS.map(p => p.id);
 const isKarlaResa = resa => resa && KARLA_PRESTATION_IDS.includes(resa.prestation_id);
 const brandOf = resa => isKarlaResa(resa) ? 'Karla' : 'Ressource A.I.M.E';
+const tokenValid = (resa, req) => req.query.t === resa.manage_token;
 
 router.post('/create', async (req, res) => {
   const { prestationId, mode, date, heure, nom, prenom, email, telephone,
@@ -28,12 +30,13 @@ router.post('/create', async (req, res) => {
   if (!prestation) return res.status(400).send('Prestation inconnue');
 
   try {
+    const manageToken = crypto.randomBytes(16).toString('hex');
     const [result] = await db.execute(
-      `INSERT INTO reservations (prestation_id, prestation_titre, mode, date, heure, nom, prenom, email, telephone, prenom_partenaire, nom_partenaire, telephone_partenaire, replace_id, enfant_prenom, enfant_age, statut, created_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', NOW())`,
+      `INSERT INTO reservations (prestation_id, prestation_titre, mode, date, heure, nom, prenom, email, telephone, prenom_partenaire, nom_partenaire, telephone_partenaire, replace_id, enfant_prenom, enfant_age, manage_token, statut, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', NOW())`,
       [prestationId, prestation.titre, mode, date, heure, nom, prenom, email, telephone,
        prenom_partenaire || null, nom_partenaire || null, telephone_partenaire || null, replace_id || null,
-       enfant_prenom || null, enfant_age || null]
+       enfant_prenom || null, enfant_age || null, manageToken]
     );
     const reservationId = result.insertId;
 
@@ -111,34 +114,35 @@ router.get('/gerer/:id', async (req, res) => {
   try {
     const [rows] = await db.execute('SELECT * FROM reservations WHERE id = ?', [req.params.id]);
     const resa = rows[0];
-    if (!resa) return res.status(404).send('Réservation introuvable');
+    if (!resa || !tokenValid(resa, req)) return res.status(404).send('Réservation introuvable');
     const karla = isKarlaResa(resa);
     const homeLink = karla ? '/karla' : '/';
+    const replaceSuffix = resa.manage_token ? `&t=${resa.manage_token}` : '';
     const newSlotLink = resa.prestation_id === 'decouverte'
-      ? `/decouverte?replace=${resa.id}`
-      : karla ? '/karla' : `/?prestation=${resa.prestation_id}&replace=${resa.id}`;
-    res.render('manage', { resa, formatDateFR, homeLink, newSlotLink, brand: brandOf(resa) });
+      ? `/decouverte?replace=${resa.id}${replaceSuffix}`
+      : karla ? '/karla' : `/?prestation=${resa.prestation_id}&replace=${resa.id}${replaceSuffix}`;
+    res.render('manage', { resa, formatDateFR, homeLink, newSlotLink, token: resa.manage_token, brand: brandOf(resa) });
   } catch (err) {
     console.error('Erreur manage:', err);
     res.status(500).send('Une erreur est survenue.');
   }
 });
 
-router.get('/manage/:id', (req, res) => res.redirect(`/booking/gerer/${req.params.id}`));
+router.get('/manage/:id', (req, res) => res.redirect(`/booking/gerer/${req.params.id}${req.query.t ? `?t=${req.query.t}` : ''}`));
 
 router.get('/annuler/:id', async (req, res) => {
   try {
     const [rows] = await db.execute('SELECT * FROM reservations WHERE id = ?', [req.params.id]);
     const resa = rows[0];
-    if (!resa) return res.status(404).send('Réservation introuvable');
-    res.render('annuler', { resa, formatDateFR, homeLink: isKarlaResa(resa) ? '/karla' : '/', brand: brandOf(resa) });
+    if (!resa || !tokenValid(resa, req)) return res.status(404).send('Réservation introuvable');
+    res.render('annuler', { resa, formatDateFR, homeLink: isKarlaResa(resa) ? '/karla' : '/', token: resa.manage_token, brand: brandOf(resa) });
   } catch (err) {
     console.error('Erreur annuler:', err);
     res.status(500).send('Une erreur est survenue.');
   }
 });
 
-router.get('/cancel/:id', (req, res) => res.redirect(`/booking/annuler/${req.params.id}`));
+router.get('/cancel/:id', (req, res) => res.redirect(`/booking/annuler/${req.params.id}${req.query.t ? `?t=${req.query.t}` : ''}`));
 
 async function annulerReservation(resa) {
   if (!resa || resa.statut === 'cancelled') return;
@@ -164,8 +168,9 @@ router.post('/annuler/:id', async (req, res) => {
   try {
     const [rows] = await db.execute('SELECT * FROM reservations WHERE id = ?', [req.params.id]);
     const resa = rows[0];
+    if (!resa || !tokenValid(resa, req)) return res.status(404).send('Réservation introuvable');
     const home = isKarlaResa(resa) ? '/karla' : '/';
-    if (!resa || resa.statut === 'cancelled') return res.redirect(`/booking/cancelled?home=${encodeURIComponent(home)}`);
+    if (resa.statut === 'cancelled') return res.redirect(`/booking/cancelled?home=${encodeURIComponent(home)}`);
 
     await annulerReservation(resa);
     res.redirect(`/booking/cancelled?home=${encodeURIComponent(home)}`);
@@ -279,8 +284,8 @@ ${infoLieu}
 ────────────────────────
 
 Souhaitez-vous modifier ce rendez-vous ?
-❌ Annuler : ${process.env.BASE_URL}/booking/annuler/${resa.id}
-🔄 Modifier : ${process.env.BASE_URL}/booking/gerer/${resa.id}
+❌ Annuler : ${process.env.BASE_URL}/booking/annuler/${resa.id}?t=${resa.manage_token}
+🔄 Modifier : ${process.env.BASE_URL}/booking/gerer/${resa.id}?t=${resa.manage_token}
 
 À bientôt !
 ${karla ? 'Karla Ampigny Lucenay' : "L'équipe de Ressource A.I.M.E"}${isTelephone ? '' : `\n📞 ${karla ? '06 96 75 65 02' : '06 96 69 60 21'}`}`;

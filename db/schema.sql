@@ -14,5 +14,6 @@ CREATE TABLE IF NOT EXISTS reservations (
   replace_id INT,
   enfant_prenom VARCHAR(100),
   enfant_age TINYINT,
+  manage_token CHAR(32),
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );

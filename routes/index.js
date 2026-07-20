@@ -69,17 +69,20 @@ const PRESTATIONS = [
   praticien: 'karla'
 }];
 
-async function getPrefill(replaceId) {
+async function getPrefill(replaceId, token) {
   if (!replaceId) return {};
-  const [rows] = await db.execute('SELECT prenom, nom, email, telephone FROM reservations WHERE id = ?', [replaceId]);
-  return rows[0] || {};
+  const [rows] = await db.execute('SELECT prenom, nom, email, telephone, manage_token FROM reservations WHERE id = ?', [replaceId]);
+  const resa = rows[0];
+  if (!resa || token !== resa.manage_token) return {};
+  const { manage_token, ...prefill } = resa;
+  return prefill;
 }
 
 router.get('/', async (req, res) => {
   res.render('index', {
     prestations: PRESTATIONS.filter(p => p.id !== 'seance_enfant'),
     stripePublicKey: process.env.STRIPE_PUBLIC_KEY,
-    prefill: await getPrefill(req.query.replace)
+    prefill: await getPrefill(req.query.replace, req.query.t)
   });
 });
 
@@ -87,7 +90,7 @@ router.get('/decouverte', async (req, res) => {
   res.render('index', {
     prestations: PRESTATIONS.filter(p => p.id === 'decouverte'),
     stripePublicKey: process.env.STRIPE_PUBLIC_KEY,
-    prefill: await getPrefill(req.query.replace)
+    prefill: await getPrefill(req.query.replace, req.query.t)
   });
 });
 
