@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>Famille – Rejoindre ou créer</title>
+  <link rel="stylesheet" href="/css/famille.css">
+</head>
+<body class="famille-setup">
+  <div class="setup-card">
+    <div class="setup-logo">👨‍👩‍👧‍👦</div>
+    <h1 class="setup-title">Famille Points</h1>
+    <p class="setup-sub">Gamifiez la vie de famille !</p>
+
+    <div class="setup-tabs">
+      <button class="setup-tab active" onclick="switchTab('creer')">Créer</button>
+      <button class="setup-tab" onclick="switchTab('rejoindre')">Rejoindre</button>
+    </div>
+
+    <!-- Créer une famille -->
+    <form class="setup-form active" id="form-creer">
+      <div class="setup-field">
+        <label>Nom de la famille</label>
+        <input type="text" id="nom_famille" placeholder="ex: Famille Martin" maxlength="50" required>
+      </div>
+      <div class="setup-field">
+        <label>Votre prénom</label>
+        <input type="text" id="prenom_creer" placeholder="ex: Maman, Papa, Lucas…" maxlength="30" required>
+      </div>
+      <div class="setup-field">
+        <label>Votre avatar</label>
+        <div class="avatar-picker" id="avatar-creer">
+          <% ['👨','👩','👦','👧','🧑','👴','👵','🧔','👱','🧒'].forEach((a, i) => { %>
+          <div class="avatar-opt<%= i===0?' selected':'' %>" data-avatar="<%= a %>" onclick="pickAvatar('creer', this)"><%= a %></div>
+          <% }); %>
+        </div>
+      </div>
+      <div class="setup-field">
+        <label>Couleur</label>
+        <div class="color-picker" id="color-creer">
+          <% ['#3B82F6','#EC4899','#F59E0B','#8B5CF6','#10B981','#F97316','#EF4444','#06B6D4'].forEach((c, i) => { %>
+          <div class="color-opt<%= i===0?' selected':'' %>" data-color="<%= c %>" style="background:<%= c %>" onclick="pickColor('creer', this)"></div>
+          <% }); %>
+        </div>
+      </div>
+      <button type="submit" class="setup-submit">Créer la famille →</button>
+      <div class="setup-error" id="err-creer"></div>
+    </form>
+
+    <!-- Rejoindre une famille -->
+    <form class="setup-form" id="form-rejoindre">
+      <div class="setup-field">
+        <label>Code famille (6 caractères)</label>
+        <input type="text" id="code" placeholder="ex: A1B2C3" maxlength="6" style="text-transform:uppercase;letter-spacing:.15em" required>
+      </div>
+      <div class="setup-field">
+        <label>Votre prénom</label>
+        <input type="text" id="prenom_rejoindre" placeholder="ex: Chloé, Lucas…" maxlength="30" required>
+      </div>
+      <div class="setup-field">
+        <label>Votre avatar</label>
+        <div class="avatar-picker" id="avatar-rejoindre">
+          <% ['👨','👩','👦','👧','🧑','👴','👵','🧔','👱','🧒'].forEach((a, i) => { %>
+          <div class="avatar-opt<%= i===0?' selected':'' %>" data-avatar="<%= a %>" onclick="pickAvatar('rejoindre', this)"><%= a %></div>
+          <% }); %>
+        </div>
+      </div>
+      <div class="setup-field">
+        <label>Couleur</label>
+        <div class="color-picker" id="color-rejoindre">
+          <% ['#3B82F6','#EC4899','#F59E0B','#8B5CF6','#10B981','#F97316','#EF4444','#06B6D4'].forEach((c, i) => { %>
+          <div class="color-opt<%= i===0?' selected':'' %>" data-color="<%= c %>" style="background:<%= c %>" onclick="pickColor('rejoindre', this)"></div>
+          <% }); %>
+        </div>
+      </div>
+      <button type="submit" class="setup-submit">Rejoindre →</button>
+      <div class="setup-error" id="err-rejoindre"></div>
+    </form>
+  </div>
+
+  <script>
+    let currentTab = 'creer';
+
+    function switchTab(tab) {
+      currentTab = tab;
+      document.querySelectorAll('.setup-tab').forEach((b,i) => b.classList.toggle('active', (i===0&&tab==='creer')||(i===1&&tab==='rejoindre')));
+      document.querySelectorAll('.setup-form').forEach(f => f.classList.remove('active'));
+      document.getElementById('form-' + tab).classList.add('active');
+    }
+
+    function pickAvatar(ctx, el) {
+      document.querySelectorAll(`#avatar-${ctx} .avatar-opt`).forEach(e => e.classList.remove('selected'));
+      el.classList.add('selected');
+    }
+
+    function pickColor(ctx, el) {
+      document.querySelectorAll(`#color-${ctx} .color-opt`).forEach(e => e.classList.remove('selected'));
+      el.classList.add('selected');
+    }
+
+    function getAvatar(ctx) {
+      return document.querySelector(`#avatar-${ctx} .selected`)?.dataset.avatar || '👤';
+    }
+    function getColor(ctx) {
+      return document.querySelector(`#color-${ctx} .selected`)?.dataset.color || '#3B82F6';
+    }
+
+    document.getElementById('form-creer').addEventListener('submit', async e => {
+      e.preventDefault();
+      const btn = e.target.querySelector('.setup-submit');
+      btn.disabled = true; btn.textContent = 'Création…';
+      const body = {
+        nom_famille: document.getElementById('nom_famille').value,
+        prenom: document.getElementById('prenom_creer').value,
+        avatar: getAvatar('creer'),
+        couleur: getColor('creer')
+      };
+      const res = await fetch('/famille/setup/creer', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body) });
+      const data = await res.json();
+      if (data.success) {
+        window.location.href = '/famille';
+      } else {
+        document.getElementById('err-creer').textContent = data.error || 'Erreur';
+        document.getElementById('err-creer').style.display = 'block';
+        btn.disabled = false; btn.textContent = 'Créer la famille →';
+      }
+    });
+
+    document.getElementById('form-rejoindre').addEventListener('submit', async e => {
+      e.preventDefault();
+      const btn = e.target.querySelector('.setup-submit');
+      btn.disabled = true; btn.textContent = 'Connexion…';
+      const body = {
+        code: document.getElementById('code').value,
+        prenom: document.getElementById('prenom_rejoindre').value,
+        avatar: getAvatar('rejoindre'),
+        couleur: getColor('rejoindre')
+      };
+      const res = await fetch('/famille/setup/rejoindre', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body) });
+      const data = await res.json();
+      if (data.success) {
+        window.location.href = '/famille';
+      } else {
+        document.getElementById('err-rejoindre').textContent = data.error || 'Code introuvable';
+        document.getElementById('err-rejoindre').style.display = 'block';
+        btn.disabled = false; btn.textContent = 'Rejoindre →';
+      }
+    });
+
+    document.getElementById('code').addEventListener('input', function() {
+      this.value = this.value.toUpperCase();
+    });
+  </script>
+</body>
+</html>
