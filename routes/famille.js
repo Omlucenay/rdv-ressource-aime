@@ -73,7 +73,7 @@ router.post('/setup/creer', async (req, res) => {
     await conn.commit();
     req.session.famille_id = famille_id;
     req.session.membre_id = memResult.insertId;
-    res.json({ success: true, code });
+    req.session.save(() => res.json({ success: true, code }));
   } catch (err) {
     await conn.rollback();
     console.error(err);
@@ -103,7 +103,7 @@ router.post('/setup/rejoindre', async (req, res) => {
     );
     req.session.famille_id = famille.id;
     req.session.membre_id = memResult.insertId;
-    res.json({ success: true });
+    req.session.save(() => res.json({ success: true }));
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Erreur serveur' });
