@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Famille Points</title>
+  <link rel="stylesheet" href="/css/famille.css">
+</head>
+<body class="famille-app">
+
+  <!-- ── Top bar ── -->
+  <header class="top-bar">
+    <h1 id="screen-title">Accueil</h1>
+    <div class="top-bar-actions">
+      <button class="icon-btn" id="btn-top-action" style="display:none">✏️</button>
+    </div>
+  </header>
+
+  <!-- ── Content area ── -->
+  <main class="content">
+
+    <!-- ACCUEIL -->
+    <section class="screen active" id="screen-accueil">
+      <p class="greeting" id="greeting">Bonjour, Famille ! 👋</p>
+      <div class="period-toggle">
+        <button class="period-btn active" data-p="semaine" onclick="setPeriod('semaine')">Semaine</button>
+        <button class="period-btn" data-p="mois" onclick="setPeriod('mois')">Mois</button>
+        <button class="period-btn" data-p="annee" onclick="setPeriod('annee')">Année</button>
+      </div>
+      <div class="leaderboard-card">
+        <h2>Classement familial 🏆</h2>
+        <p class="subtitle" id="leaderboard-subtitle">Qui gagne cette semaine ?</p>
+        <div class="podium" id="podium"></div>
+      </div>
+      <div class="section-header">
+        <h3>Activité récente</h3>
+        <span class="badge" id="activity-count">0</span>
+      </div>
+      <div class="activity-list" id="activity-list">
+        <div class="empty-state">Aucune activité pour le moment</div>
+      </div>
+    </section>
+
+    <!-- CLASSEMENT -->
+    <section class="screen" id="screen-classement">
+      <div class="period-toggle">
+        <button class="period-btn active" data-p="semaine" onclick="setPeriod('semaine')">Semaine</button>
+        <button class="period-btn" data-p="mois" onclick="setPeriod('mois')">Mois</button>
+        <button class="period-btn" data-p="annee" onclick="setPeriod('annee')">Année</button>
+      </div>
+      <div class="rank-list" id="rank-list"></div>
+    </section>
+
+    <!-- TÂCHES -->
+    <section class="screen" id="screen-taches">
+      <div class="tab-bar">
+        <button class="tab-btn active-pos" id="tab-pos" onclick="switchTaskTab('pos')">Gagner des points</button>
+        <button class="tab-btn" id="tab-neg" onclick="switchTaskTab('neg')">Pénalités</button>
+      </div>
+      <button class="juge-btn" onclick="openJuge()">
+        <span>🔨</span> Demander au Juge IA
+      </button>
+      <div class="task-grid" id="task-grid"></div>
+    </section>
+
+    <!-- GESTIONNAIRE -->
+    <section class="screen" id="screen-gestionnaire">
+      <div class="section-block">
+        <h3>👥 Membres</h3>
+        <div id="gest-membres"></div>
+        <button class="add-btn" onclick="openAddMembre()">+ Ajouter un membre</button>
+      </div>
+      <div class="section-block">
+        <h3>📋 Tâches personnalisées</h3>
+        <div id="gest-taches"></div>
+        <button class="add-btn" onclick="openAddTache()">+ Ajouter une tâche</button>
+      </div>
+    </section>
+
+    <!-- RÉGLAGES -->
+    <section class="screen" id="screen-reglages">
+      <div class="section-block">
+        <h3 style="margin-bottom:10px">🔑 Code famille</h3>
+        <div class="code-display" id="code-display" onclick="copyCode()">------</div>
+        <p style="font-size:.75rem;color:var(--muted);text-align:center">Tap pour copier · Partagez ce code à votre famille</p>
+      </div>
+      <div class="settings-block">
+        <div class="settings-item" onclick="if(confirm('Remettre tous les scores à zéro ?')) resetScores()">
+          <span class="label danger">🔄 Réinitialiser les scores</span>
+        </div>
+        <a href="/famille/quitter" class="settings-item" style="text-decoration:none;display:flex;align-items:center;justify-content:space-between;padding:16px;border-bottom:1px solid var(--border)">
+          <span class="label danger">🚪 Quitter cette famille</span>
+        </a>
+      </div>
+      <p style="font-size:.75rem;color:var(--muted);text-align:center;margin-top:16px">Famille Points · v1.0</p>
+    </section>
+
+  </main>
+
+  <!-- ── Bottom nav ── -->
+  <nav class="bottom-nav">
+    <button class="nav-item active" id="nav-accueil" onclick="goScreen('accueil')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      Accueil
+    </button>
+    <button class="nav-item" id="nav-classement" onclick="goScreen('classement')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Semaine
+    </button>
+    <button class="nav-item center-btn" id="nav-taches" onclick="goScreen('taches')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+      Tâches
+    </button>
+    <button class="nav-item" id="nav-gestionnaire" onclick="goScreen('gestionnaire')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+      Gérer
+    </button>
+    <button class="nav-item" id="nav-reglages" onclick="goScreen('reglages')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      Réglages
+    </button>
+  </nav>
+
+  <!-- ── Modal: Assigner des points ── -->
+  <div class="modal-overlay" id="modal-attrib">
+    <div class="modal-sheet">
+      <div class="modal-header">
+        <h2>Assigner des points</h2>
+        <button class="close-btn" onclick="closeModal('modal-attrib')">✕</button>
+      </div>
+      <p class="modal-subtitle" id="attrib-subtitle">Qui gagne des points ?</p>
+      <div class="member-grid" id="member-pick-grid"></div>
+    </div>
+  </div>
+
+  <!-- ── Modal: Juge IA ── -->
+  <div class="modal-overlay" id="modal-juge">
+    <div class="modal-sheet">
+      <div class="modal-header">
+        <h2>🔨 Juge IA</h2>
+        <button class="close-btn" onclick="closeModal('modal-juge')">✕</button>
+      </div>
+      <p class="modal-subtitle">Décris la situation, le juge tranche !</p>
+      <textarea class="juge-input" id="juge-situation" rows="4" placeholder="Ex: Lucas refuse de faire la vaisselle mais dit qu'il l'a déjà fait hier…"></textarea>
+      <button class="juge-submit" id="juge-submit-btn" onclick="askJuge()">Rendre le verdict</button>
+      <div class="juge-verdict" id="juge-verdict"></div>
+    </div>
+  </div>
+
+  <!-- ── Modal: Ajouter un membre ── -->
+  <div class="modal-overlay" id="modal-add-membre">
+    <div class="modal-sheet">
+      <div class="modal-header">
+        <h2>Ajouter un membre</h2>
+        <button class="close-btn" onclick="closeModal('modal-add-membre')">✕</button>
+      </div>
+      <div class="form-field">
+        <label>Prénom</label>
+        <input type="text" class="form-input" id="new-membre-prenom" placeholder="ex: Chloé" maxlength="30">
+      </div>
+      <div class="form-field">
+        <label>Avatar</label>
+        <div class="avatar-picker" id="new-membre-avatar">
+          <% ['👨','👩','👦','👧','🧑','👴','👵','🧔','👱','🧒'].forEach((a, i) => { %>
+          <div class="avatar-opt<%= i===0?' selected':'' %>" data-avatar="<%= a %>" onclick="pickInModal('new-membre-avatar', this)"><%= a %></div>
+          <% }); %>
+        </div>
+      </div>
+      <div class="form-field">
+        <label>Couleur</label>
+        <div class="color-picker" id="new-membre-color">
+          <% ['#3B82F6','#EC4899','#F59E0B','#8B5CF6','#10B981','#F97316','#EF4444','#06B6D4'].forEach((c, i) => { %>
+          <div class="color-opt<%= i===0?' selected':'' %>" data-color="<%= c %>" style="background:<%= c %>" onclick="pickColorInModal('new-membre-color', this)"></div>
+          <% }); %>
+        </div>
+      </div>
+      <div class="form-field">
+        <label>Rôle</label>
+        <select class="form-input" id="new-membre-role">
+          <option value="enfant">Enfant</option>
+          <option value="parent">Parent</option>
+        </select>
+      </div>
+      <button class="submit-btn" onclick="submitAddMembre()">Ajouter</button>
+    </div>
+  </div>
+
+  <!-- ── Modal: Ajouter une tâche ── -->
+  <div class="modal-overlay" id="modal-add-tache">
+    <div class="modal-sheet">
+      <div class="modal-header">
+        <h2>Ajouter une tâche</h2>
+        <button class="close-btn" onclick="closeModal('modal-add-tache')">✕</button>
+      </div>
+      <div class="form-field">
+        <label>Nom de la tâche</label>
+        <input type="text" class="form-input" id="new-tache-titre" placeholder="ex: Sortir les poubelles" maxlength="60">
+      </div>
+      <div class="form-field">
+        <label>Points</label>
+        <div class="pts-row">
+          <div class="pts-toggle">
+            <button class="pts-t-btn pos active" id="pts-pos-btn" onclick="setPtsSign(1)">+ Gain</button>
+            <button class="pts-t-btn neg" id="pts-neg-btn" onclick="setPtsSign(-1)">− Pénalité</button>
+          </div>
+          <input type="number" class="form-input" id="new-tache-pts" placeholder="10" min="1" max="100" style="flex:1">
+        </div>
+      </div>
+      <div class="form-field">
+        <label>Icône</label>
+        <div class="avatar-picker" id="new-tache-icon">
+          <% ['⭐','🍽️','🛏️','📚','🏃','🧹','🐾','💧','📦','🔥','🗑️','📺','💡','📢'].forEach((ic, i) => { %>
+          <div class="avatar-opt<%= i===0?' selected':'' %>" data-avatar="<%= ic %>" onclick="pickInModal('new-tache-icon', this)"><%= ic %></div>
+          <% }); %>
+        </div>
+      </div>
+      <button class="submit-btn" onclick="submitAddTache()">Créer</button>
+    </div>
+  </div>
+
+  <!-- ── Toast ── -->
+  <div class="toast" id="toast">
+    <span class="toast-icon" id="toast-icon">✅</span>
+    <span id="toast-msg">Attribution effectuée</span>
+  </div>
+
+  <!-- ── Champion overlay ── -->
+  <div class="champion-overlay" id="champion-overlay">
+    <div class="champion-confetti" id="confetti-container"></div>
+    <div class="champion-badge">SÉRIE DE <span id="serie-jours">1</span> JOUR<span id="serie-s"></span></div>
+    <div class="champion-avatar" id="champ-avatar" style="background:#F59E0B">
+      <span class="champion-crown">👑</span>
+      <span id="champ-emoji">👑</span>
+    </div>
+    <div class="champion-title">CHAMPION DE LA FAMILLE 🏆</div>
+    <div class="champion-name" id="champ-name">—</div>
+    <div class="champion-pts">⭐ <span id="champ-pts">0</span> pts</div>
+    <div class="champion-others" id="champ-others"></div>
+    <button class="champion-close" onclick="closeChampion()">Continuer</button>
+  </div>
+
+  <script>
+    // ── State ──
+    let STATE = { screen: 'accueil', periode: 'semaine', tacheTab: 'pos', ptsSign: 1 };
+    let DATA = { famille: null, membres: [], taches: { positives: [], negatives: [] }, scores: [], activites: [] };
+    let pendingTache = null;
+
+    // ── Init ──
+    (async function init() {
+      await loadInfo();
+      await Promise.all([loadScores(), loadActivite(), loadTaches()]);
+      renderAccueil();
+      renderClassement();
+      renderGestionnaire();
+    })();
+
+    // ── API helpers ──
+    async function api(path, opts = {}) {
+      const res = await fetch('/famille' + path, { headers: { 'Content-Type': 'application/json' }, ...opts });
+      return res.json();
+    }
+
+    async function loadInfo() {
+      const d = await api('/api/info');
+      DATA.famille = d.famille;
+      DATA.membres = d.membres;
+      const h = new Date().getHours();
+      const greet = h < 12 ? 'Bonjour' : h < 18 ? 'Bon après-midi' : 'Bonsoir';
+      document.getElementById('greeting').textContent = `${greet}, ${d.famille?.nom || 'Famille'} ! ${h < 18 ? '👋' : '🌙'}`;
+      document.getElementById('code-display').textContent = d.famille?.code || '------';
+    }
+
+    async function loadScores() {
+      const d = await api('/api/scores?periode=' + STATE.periode);
+      DATA.scores = d.membres || [];
+    }
+
+    async function loadActivite() {
+      const d = await api('/api/activite');
+      DATA.activites = d.activites || [];
+    }
+
+    async function loadTaches() {
+      const d = await api('/api/taches');
+      DATA.taches = d;
+    }
+
+    // ── Screen navigation ──
+    function goScreen(name) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+      document.getElementById('screen-' + name).classList.add('active');
+      document.getElementById('nav-' + name)?.classList.add('active');
+      STATE.screen = name;
+      const titles = { accueil: 'Accueil', classement: 'Classement', taches: 'Tâches', gestionnaire: 'Gestionnaire', reglages: 'Réglages' };
+      document.getElementById('screen-title').textContent = titles[name] || '';
+      if (name === 'taches') renderTaches();
+      if (name === 'gestionnaire') renderGestionnaire();
+      if (name === 'classement') renderClassement();
+    }
+
+    // ── Period ──
+    async function setPeriod(p) {
+      STATE.periode = p;
+      document.querySelectorAll('.period-btn').forEach(b => b.classList.toggle('active', b.dataset.p === p));
+      const subtitles = { semaine: 'Qui gagne cette semaine ?', mois: 'Ce mois-ci', annee: 'Cette année' };
+      const el = document.getElementById('leaderboard-subtitle');
+      if (el) el.textContent = subtitles[p];
+      await loadScores();
+      renderPodium();
+      renderClassement();
+    }
+
+    // ── Render: Accueil ──
+    function renderAccueil() {
+      renderPodium();
+      renderActivity();
+    }
+
+    function renderPodium() {
+      const scores = [...DATA.scores];
+      const pod = document.getElementById('podium');
+      if (!pod) return;
+      if (scores.length === 0) { pod.innerHTML = '<p style="color:rgba(255,255,255,.7);text-align:center">Aucun score encore</p>'; return; }
+      const ordered = [scores[1], scores[0], scores[2]].filter(Boolean);
+      const classes = ['second', 'first', 'third'];
+      const ranks = ['2ème', '1er', '3ème'];
+      pod.innerHTML = ordered.map((m, i) => `
+        <div class="podium-item ${classes[i]}">
+          <div class="avatar-circle" style="background:${m.couleur}20;border-color:${m.couleur}">
+            <span>${m.avatar}</span>
+            <span class="rank-badge">${ranks[i]}</span>
+          </div>
+          <div class="podium-name">${esc(m.prenom)}</div>
+          <div class="podium-pts">${m.total_points} pts</div>
+        </div>
+      `).join('');
+    }
+
+    function renderActivity() {
+      const list = document.getElementById('activity-list');
+      const cnt = document.getElementById('activity-count');
+      const acts = DATA.activites;
+      cnt.textContent = acts.length;
+      if (acts.length === 0) {
+        list.innerHTML = '<div class="empty-state">Aucune activité pour le moment 🌱</div>';
+        return;
+      }
+      list.innerHTML = acts.map(a => {
+        const pos = a.points > 0;
+        const time = fmtTime(a.created_at);
+        return `<div class="activity-item">
+          <div class="activity-avatar" style="background:${a.couleur}20">${a.avatar}</div>
+          <div class="activity-info">
+            <div class="task-name">${esc(a.tache_titre)}</div>
+            <div class="member-time">${esc(a.prenom)} · ${time}</div>
+          </div>
+          <div class="activity-pts ${pos?'pts-pos':'pts-neg'}">${pos?'↗ +':'↘ '}${a.points} pts</div>
+        </div>`;
+      }).join('');
+    }
+
+    // ── Render: Classement ──
+    function renderClassement() {
+      const list = document.getElementById('rank-list');
+      if (!list) return;
+      if (DATA.scores.length === 0) { list.innerHTML = '<div class="empty-state">Aucun membre encore</div>'; return; }
+      const medals = ['gold', 'silver', 'bronze'];
+      list.innerHTML = DATA.scores.map((m, i) => `
+        <div class="rank-item">
+          <div class="rank-num ${medals[i] || ''}">${i + 1}</div>
+          <div class="rank-avatar" style="background:${m.couleur}25">${m.avatar}</div>
+          <div class="rank-info">
+            <div class="rank-name">${esc(m.prenom)}</div>
+            <div class="rank-role">${m.role === 'parent' ? 'Parent' : 'Enfant'}</div>
+          </div>
+          <div class="rank-score" style="color:${m.total_points >= 0 ? 'var(--success)' : 'var(--danger)'}">${m.total_points} pts</div>
+        </div>
+      `).join('');
+    }
+
+    // ── Render: Tâches ──
+    function renderTaches() {
+      const grid = document.getElementById('task-grid');
+      const list = STATE.tacheTab === 'pos' ? DATA.taches.positives : DATA.taches.negatives;
+      if (!list || list.length === 0) {
+        grid.innerHTML = '<p style="grid-column:span 2;text-align:center;color:var(--muted);padding:20px">Aucune tâche</p>';
+        return;
+      }
+      const sign = STATE.tacheTab === 'pos' ? 'pos' : 'neg';
+      grid.innerHTML = list.map(t => `
+        <div class="task-card" onclick="openAttrib(${t.id})">
+          <div class="task-icon ${sign}">${t.icone}</div>
+          <div class="task-name">${esc(t.titre)}</div>
+          <div class="task-pts ${sign}">${t.points > 0 ? '+' : ''}${t.points} pts</div>
+        </div>
+      `).join('');
+    }
+
+    function switchTaskTab(tab) {
+      STATE.tacheTab = tab;
+      document.getElementById('tab-pos').className = 'tab-btn' + (tab === 'pos' ? ' active-pos' : '');
+      document.getElementById('tab-neg').className = 'tab-btn' + (tab === 'neg' ? ' active-neg' : '');
+      renderTaches();
+    }
+
+    // ── Render: Gestionnaire ──
+    function renderGestionnaire() {
+      const memEl = document.getElementById('gest-membres');
+      const tachEl = document.getElementById('gest-taches');
+      memEl.innerHTML = DATA.membres.map(m => `
+        <div class="member-row">
+          <div class="m-avatar" style="background:${m.couleur}25">${m.avatar}</div>
+          <div class="m-name">${esc(m.prenom)}</div>
+          <div class="m-role">${m.role === 'parent' ? '👨‍💼 Parent' : '👦 Enfant'}</div>
+          <button class="delete-btn" onclick="deleteMembre(${m.id}, '${esc(m.prenom)}')">🗑</button>
+        </div>
+      `).join('') || '<p style="color:var(--muted);font-size:.85rem">Aucun membre</p>';
+
+      const allTaches = [...(DATA.taches.positives || []), ...(DATA.taches.negatives || [])];
+      tachEl.innerHTML = allTaches.map(t => `
+        <div class="task-row">
+          <div class="t-icon" style="background:${t.points > 0 ? '#D1FAE5' : '#FFE4E6'}">${t.icone}</div>
+          <div class="t-name">${esc(t.titre)}</div>
+          <div class="t-pts" style="color:${t.points > 0 ? 'var(--success)' : 'var(--danger)'}">${t.points > 0 ? '+' : ''}${t.points}</div>
+          <button class="delete-btn" onclick="deleteTache(${t.id})">🗑</button>
+        </div>
+      `).join('') || '<p style="color:var(--muted);font-size:.85rem">Aucune tâche</p>';
+    }
+
+    // ── Attribution flow ──
+    function openAttrib(tacheId) {
+      const allTaches = [...(DATA.taches.positives || []), ...(DATA.taches.negatives || [])];
+      pendingTache = allTaches.find(t => t.id === tacheId);
+      if (!pendingTache) return;
+      const pos = pendingTache.points > 0;
+      document.getElementById('attrib-subtitle').textContent = `Qui ${pos ? 'gagne' : 'perd'} ${Math.abs(pendingTache.points)} points ?`;
+      const grid = document.getElementById('member-pick-grid');
+      grid.innerHTML = DATA.membres.map(m => `
+        <div class="member-pick" onclick="confirmAttrib(${m.id})">
+          <div class="m-av" style="background:${m.couleur}25">${m.avatar}</div>
+          <div class="m-name">${esc(m.prenom)}</div>
+        </div>
+      `).join('');
+      openModal('modal-attrib');
+    }
+
+    async function confirmAttrib(membreId) {
+      closeModal('modal-attrib');
+      const body = { membre_id: membreId, tache_id: pendingTache.id };
+      const d = await api('/api/attribution', { method: 'POST', body: JSON.stringify(body) });
+      if (d.success) {
+        showToast(d.tache.points > 0 ? '✅' : '❌', `${d.membre.prenom} : ${d.tache.points > 0 ? '+' : ''}${d.tache.points} pts`);
+        await Promise.all([loadScores(), loadActivite()]);
+        renderAccueil();
+        renderClassement();
+        setTimeout(() => showChampion(d), 800);
+      } else {
+        showToast('❌', d.error || 'Erreur');
+      }
+      pendingTache = null;
+    }
+
+    // ── Champion overlay ──
+    function showChampion(d) {
+      const champ = d.champion;
+      if (!champ) return;
+      document.getElementById('champ-emoji').textContent = champ.avatar;
+      document.getElementById('champ-avatar').style.background = champ.couleur + '40';
+      document.getElementById('champ-name').textContent = champ.prenom;
+      document.getElementById('champ-pts').textContent = champ.total_points;
+
+      const others = (d.scores || []).slice(1, 3);
+      const labels = ['DEUXIÈME', 'STAR DE LA SEMAINE'];
+      document.getElementById('champ-others').innerHTML = others.map((m, i) => `
+        <div class="champion-other">
+          <div class="label">${labels[i]}</div>
+          <div class="av">${m.avatar}</div>
+          <div class="name">${esc(m.prenom)}</div>
+          <div class="pts">${m.total_points} pts</div>
+        </div>
+      `).join('');
+
+      spawnConfetti();
+      document.getElementById('champion-overlay').classList.add('show');
+    }
+
+    function closeChampion() {
+      document.getElementById('champion-overlay').classList.remove('show');
+    }
+
+    function spawnConfetti() {
+      const container = document.getElementById('confetti-container');
+      container.innerHTML = '';
+      const colors = ['#F59E0B','#3B82F6','#EC4899','#10B981','#8B5CF6','#F97316'];
+      for (let i = 0; i < 40; i++) {
+        const el = document.createElement('div');
+        el.className = 'confetti-piece';
+        el.style.cssText = `
+          left: ${Math.random() * 100}%;
+          background: ${colors[Math.floor(Math.random() * colors.length)]};
+          animation-delay: ${Math.random() * 2.5}s;
+          animation-duration: ${2.5 + Math.random() * 2}s;
+          width: ${6 + Math.random() * 6}px;
+          height: ${10 + Math.random() * 10}px;
+          border-radius: ${Math.random() > .5 ? '50%' : '2px'};
+        `;
+        container.appendChild(el);
+      }
+    }
+
+    // ── Juge IA ──
+    function openJuge() {
+      document.getElementById('juge-situation').value = '';
+      document.getElementById('juge-verdict').classList.remove('show');
+      document.getElementById('juge-verdict').textContent = '';
+      document.getElementById('juge-submit-btn').disabled = false;
+      openModal('modal-juge');
+    }
+
+    async function askJuge() {
+      const situation = document.getElementById('juge-situation').value.trim();
+      if (!situation) return;
+      const btn = document.getElementById('juge-submit-btn');
+      btn.disabled = true; btn.textContent = 'Le juge réfléchit…';
+      const d = await api('/api/juge', { method: 'POST', body: JSON.stringify({ situation }) });
+      const verdictEl = document.getElementById('juge-verdict');
+      verdictEl.textContent = d.verdict || 'Verdict indisponible.';
+      verdictEl.classList.add('show');
+      btn.disabled = false; btn.textContent = 'Rendre le verdict';
+    }
+
+    // ── Gestionnaire actions ──
+    function openAddMembre() { openModal('modal-add-membre'); }
+    function openAddTache() { openModal('modal-add-tache'); }
+
+    async function submitAddMembre() {
+      const prenom = document.getElementById('new-membre-prenom').value.trim();
+      const avatar = document.querySelector('#new-membre-avatar .selected')?.dataset.avatar || '👤';
+      const couleur = document.querySelector('#new-membre-color .selected')?.dataset.color || '#3B82F6';
+      const role = document.getElementById('new-membre-role').value;
+      if (!prenom) return;
+      const d = await api('/api/membre', { method: 'POST', body: JSON.stringify({ prenom, avatar, couleur, role }) });
+      if (d.success) {
+        closeModal('modal-add-membre');
+        await loadInfo();
+        await loadScores();
+        renderGestionnaire();
+        renderClassement();
+        showToast('✅', `${prenom} rejoint la famille !`);
+      }
+    }
+
+    let ptsSign = 1;
+    function setPtsSign(s) {
+      ptsSign = s;
+      document.getElementById('pts-pos-btn').classList.toggle('active', s === 1);
+      document.getElementById('pts-neg-btn').classList.toggle('active', s === -1);
+    }
+
+    async function submitAddTache() {
+      const titre = document.getElementById('new-tache-titre').value.trim();
+      const ptsVal = parseInt(document.getElementById('new-tache-pts').value);
+      const icone = document.querySelector('#new-tache-icon .selected')?.dataset.avatar || '⭐';
+      if (!titre || isNaN(ptsVal) || ptsVal <= 0) return;
+      const points = ptsSign * ptsVal;
+      const d = await api('/api/tache', { method: 'POST', body: JSON.stringify({ titre, points, icone }) });
+      if (d.success) {
+        closeModal('modal-add-tache');
+        await loadTaches();
+        renderTaches();
+        renderGestionnaire();
+        showToast('✅', 'Tâche ajoutée !');
+      }
+    }
+
+    async function deleteMembre(id, prenom) {
+      if (!confirm(`Supprimer ${prenom} ?`)) return;
+      await api('/api/membre/' + id, { method: 'DELETE' });
+      await loadInfo();
+      await loadScores();
+      renderGestionnaire();
+      renderClassement();
+      renderPodium();
+    }
+
+    async function deleteTache(id) {
+      await api('/api/tache/' + id, { method: 'DELETE' });
+      await loadTaches();
+      renderTaches();
+      renderGestionnaire();
+    }
+
+    async function resetScores() {
+      await api('/api/reset-scores', { method: 'POST' });
+      await Promise.all([loadScores(), loadActivite()]);
+      renderAccueil();
+      renderClassement();
+      showToast('🔄', 'Scores remis à zéro');
+    }
+
+    // ── Réglages ──
+    function copyCode() {
+      const code = document.getElementById('code-display').textContent;
+      navigator.clipboard.writeText(code).then(() => showToast('📋', 'Code copié : ' + code));
+    }
+
+    // ── Modal helpers ──
+    function openModal(id) {
+      document.getElementById(id).classList.add('open');
+    }
+    function closeModal(id) {
+      document.getElementById(id).classList.remove('open');
+    }
+    document.querySelectorAll('.modal-overlay').forEach(m => {
+      m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); });
+    });
+
+    function pickInModal(containerId, el) {
+      document.querySelectorAll(`#${containerId} .avatar-opt`).forEach(e => e.classList.remove('selected'));
+      el.classList.add('selected');
+    }
+    function pickColorInModal(containerId, el) {
+      document.querySelectorAll(`#${containerId} .color-opt`).forEach(e => e.classList.remove('selected'));
+      el.classList.add('selected');
+    }
+
+    // ── Toast ──
+    let toastTimer;
+    function showToast(icon, msg) {
+      const t = document.getElementById('toast');
+      document.getElementById('toast-icon').textContent = icon;
+      document.getElementById('toast-msg').textContent = msg;
+      t.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => t.classList.remove('show'), 3200);
+    }
+
+    // ── Utils ──
+    function esc(s) {
+      return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+    function fmtTime(dt) {
+      const d = new Date(dt);
+      const now = new Date();
+      const diff = (now - d) / 1000;
+      if (diff < 60) return 'À l\'instant';
+      if (diff < 3600) return `Il y a ${Math.floor(diff/60)} min`;
+      if (diff < 86400) return `Il y a ${Math.floor(diff/3600)}h`;
+      return d.toLocaleDateString('fr-FR', { day:'numeric', month:'short' });
+    }
+  </script>
+</body>
+</html>

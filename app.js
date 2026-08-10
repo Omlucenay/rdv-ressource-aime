@@ -39,6 +39,8 @@ app.use('/booking', bookingRouter);
 app.use('/webhooks', webhookRouter);
 const karlaRouter = require('./routes/karla');
 app.use('/karla', karlaRouter);
+const familleRouter = require('./routes/famille');
+app.use('/famille', familleRouter);
 
 // Error handler
 app.use((err, req, res, next) => {
