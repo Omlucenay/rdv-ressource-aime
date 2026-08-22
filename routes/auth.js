@@ -14,6 +14,16 @@ const SCOPES = [
   'https://www.googleapis.com/auth/calendar.events'
 ];
 
+async function withRetry(fn, retries = 2, delayMs = 3000) {
+  try {
+    return await fn();
+  } catch (err) {
+    if (retries <= 0) throw err;
+    await new Promise(resolve => setTimeout(resolve, delayMs));
+    return withRetry(fn, retries - 1, delayMs);
+  }
+}
+
 router.get('/google', (req, res) => {
   const url = oauth2Client.generateAuthUrl({
     access_type: 'offline',
@@ -26,7 +36,7 @@ router.get('/google', (req, res) => {
 router.get('/google/callback', async (req, res) => {
   const { code } = req.query;
   try {
-    const { tokens } = await oauth2Client.getToken(code);
+    const { tokens } = await withRetry(() => oauth2Client.getToken(code));
     await db.execute(
       'INSERT INTO google_tokens (id, tokens) VALUES (1, ?) ON DUPLICATE KEY UPDATE tokens = ?',
       [JSON.stringify(tokens), JSON.stringify(tokens)]
@@ -34,7 +44,7 @@ router.get('/google/callback', async (req, res) => {
     res.redirect('/');
   } catch (err) {
     console.error('Erreur OAuth:', err);
-    res.redirect('/');
+    res.send('Échec de la connexion à Google Agenda (problème réseau temporaire). <a href="/auth/google">Réessayer</a>.');
   }
 });
 
@@ -45,7 +55,7 @@ async function getTokens() {
   oauth2Client.setCredentials(tokens);
   if (tokens.expiry_date && tokens.expiry_date < Date.now() + 60000) {
     try {
-      const { credentials } = await oauth2Client.refreshAccessToken();
+      const { credentials } = await withRetry(() => oauth2Client.refreshAccessToken());
       await db.execute(
         'INSERT INTO google_tokens (id, tokens) VALUES (1, ?) ON DUPLICATE KEY UPDATE tokens = ?',
         [JSON.stringify(credentials), JSON.stringify(credentials)]
