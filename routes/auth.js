@@ -1,4 +1,5 @@
 const express = require('express');
+const crypto = require('crypto');
 const router = express.Router();
 const { google } = require('googleapis');
 const db = require('../db/connection');
@@ -24,7 +25,26 @@ async function withRetry(fn, retries = 2, delayMs = 3000) {
   }
 }
 
+// N'importe qui visitant /auth/google pouvait écraser les tokens Google réels par les siens
+// (créer une session Google avec son propre compte) et casser la prise de RDV en production.
+// Route désormais protégée par un secret connu seulement d'Olivier (GOOGLE_AUTH_ADMIN_SECRET),
+// vérifié à temps constant. L'autorisation est portée par la session le temps de l'aller-retour
+// OAuth (le paramètre ne survit pas jusqu'au callback), consommée une seule fois.
+function timingSafeEqualStrings(a, b) {
+  const bufA = Buffer.from(String(a));
+  const bufB = Buffer.from(String(b));
+  if (bufA.length !== bufB.length) return false;
+  return crypto.timingSafeEqual(bufA, bufB);
+}
+
 router.get('/google', (req, res) => {
+  const expected = process.env.GOOGLE_AUTH_ADMIN_SECRET;
+  const provided = req.query.key || '';
+  if (!expected || !timingSafeEqualStrings(provided, expected)) {
+    res.status(403).send('Accès refusé.');
+    return;
+  }
+  req.session.googleAuthPending = true;
   const url = oauth2Client.generateAuthUrl({
     access_type: 'offline',
     scope: SCOPES,
@@ -34,6 +54,11 @@ router.get('/google', (req, res) => {
 });
 
 router.get('/google/callback', async (req, res) => {
+  if (!req.session.googleAuthPending) {
+    res.status(403).send('Accès refusé.');
+    return;
+  }
+  req.session.googleAuthPending = false;
   const { code } = req.query;
   try {
     const { tokens } = await withRetry(() => oauth2Client.getToken(code));
