@@ -13,6 +13,11 @@ app.set('views', path.join(__dirname, 'views'));
 // Static files
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Webhooks : montés avant le body-parser global pour garder le raw body
+// nécessaire aux vérifications de signature (Stripe, Systeme.io)
+const webhookRouter = require('./routes/webhook');
+app.use('/webhooks', webhookRouter);
+
 // Body parser
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -30,13 +35,11 @@ const indexRouter = require('./routes/index');
 const authRouter = require('./routes/auth');
 const calendarRouter = require('./routes/calendar');
 const bookingRouter = require('./routes/booking');
-const webhookRouter = require('./routes/webhook');
 
 app.use('/', indexRouter);
 app.use('/auth', authRouter);
 app.use('/calendar', calendarRouter);
 app.use('/booking', bookingRouter);
-app.use('/webhooks', webhookRouter);
 const karlaRouter = require('./routes/karla');
 app.use('/karla', karlaRouter);
 const familleRouter = require('./routes/famille');
