@@ -97,6 +97,13 @@ Vérification après déploiement : `curl https://rdv.ressource-aime.fr/` (200) 
 
 ## Historique des versions
 
+### 12/09/2026 — Forfaits jamais confirmés depuis l'origine, corrigé + notification admin passée en Telegram
+- **Bug critique trouvé et corrigé** : les réservations `forfait_individuel` et `forfait_couple` redirigent vers une page de paiement Systeme.io externe sans jamais transmettre l'ID de réservation, et aucun webhook Systeme.io n'existait dans l'app (seul `/webhooks/stripe` était câblé). Résultat confirmé en base : **18 réservations sur 18** depuis le premier test du 10/05/2026 sont restées bloquées en statut `pending`, sans jamais créer l'événement Google Calendar — bug présent depuis l'origine, pas une régression.
+- **Correctif** : nouvel endpoint `/webhooks/systeme-io` (événement Systeme.io "New sale", signature HMAC-SHA256 vérifiée via `SYSTEME_IO_WEBHOOK_SECRET`) qui rapproche la vente par email avec la réservation `pending` la plus récente sur ces deux prestations et déclenche `confirmerReservation()`. Webhook créé côté Systeme.io (profil → Webhooks → "Nouvelle vente" uniquement) et testé en conditions réelles (200 OK).
+- Reprend au passage un correctif déjà appliqué à chaud sur le serveur mais jamais commité : le router `/webhooks` doit être monté avant le body-parser global pour garder le raw body nécessaire aux vérifications de signature (Stripe et désormais Systeme.io).
+- Les 18 réservations historiques bloquées ne sont pas retraitées automatiquement (créneaux passés, doublons de tentatives, données de test) — décision explicite d'Olivier, gérées à la main au cas par cas.
+- **Notification admin cabinet passée de l'email (`contact@ressource-aime.fr`) à Telegram** (même bot que les autres alertes) pour `sendNotificationAdmin`, plus immédiat. Le circuit de Karla (`k.ampigny@gmail.com`) reste en email, inchangé — canal distinct, pas concerné par la demande.
+
 ### 10/05/2026 — Import initial
 Dépôt créé, code réel de l'application rapatrié depuis l'export cPanel du serveur o2switch (aucune trace Git avant cette date).
 
