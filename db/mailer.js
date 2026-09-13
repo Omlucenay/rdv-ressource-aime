@@ -88,26 +88,51 @@ async function sendConfirmationClient(resa) {
 
 const KARLA_NOTIFICATION_EMAIL = 'k.ampigny@gmail.com';
 
-async function sendNotificationAdmin(resa) {
-  await transporter.sendMail({
-    from: `"RDV App" <${process.env.SMTP_USER}>`,
-    to: isKarla(resa) ? KARLA_NOTIFICATION_EMAIL : process.env.SMTP_USER,
-    subject: `Nouveau RDV — ${resa.prestation_titre} — ${resa.prenom} ${resa.nom}`,
-    html: `
-      <div style="font-family:Georgia,serif;color:#2B4743;max-width:600px;margin:0 auto">
-        <h2 style="color:#4A8B85">Nouvelle réservation</h2>
-        <table style="width:100%;border-collapse:collapse">
-          <tr><td style="padding:8px;border-bottom:1px solid #eee"><strong>Prestation</strong></td><td style="padding:8px;border-bottom:1px solid #eee">${resa.prestation_titre}</td></tr>
-          <tr><td style="padding:8px;border-bottom:1px solid #eee"><strong>Client</strong></td><td style="padding:8px;border-bottom:1px solid #eee">${resa.prenom} ${resa.nom}</td></tr>
-          <tr><td style="padding:8px;border-bottom:1px solid #eee"><strong>Email</strong></td><td style="padding:8px;border-bottom:1px solid #eee">${resa.email}</td></tr>
-          <tr><td style="padding:8px;border-bottom:1px solid #eee"><strong>Téléphone</strong></td><td style="padding:8px;border-bottom:1px solid #eee">${resa.telephone}</td></tr>
-          ${resa.prestation_id === 'seance_enfant' && resa.enfant_prenom ? `<tr><td style="padding:8px;border-bottom:1px solid #eee"><strong>Enfant</strong></td><td style="padding:8px;border-bottom:1px solid #eee">${resa.enfant_prenom}${resa.enfant_age ? ` (${resa.enfant_age} ans)` : ''}</td></tr>` : ''}
-          <tr><td style="padding:8px;border-bottom:1px solid #eee"><strong>Date</strong></td><td style="padding:8px;border-bottom:1px solid #eee">${formatDateFR(resa.date)} à ${resa.heure}</td></tr>
-          <tr><td style="padding:8px;border-bottom:1px solid #eee"><strong>Format</strong></td><td style="padding:8px;border-bottom:1px solid #eee">${modeLabel(resa)}</td></tr>
-        </table>
-      </div>
-    `
+async function sendTelegramAdmin(resa) {
+  const lignes = [
+    `🔔 Nouveau RDV — ${resa.prestation_titre}`,
+    `${resa.prenom} ${resa.nom}`,
+    `📧 ${resa.email}`,
+    `📞 ${resa.telephone}`,
+    resa.prestation_id === 'seance_enfant' && resa.enfant_prenom
+      ? `👶 ${resa.enfant_prenom}${resa.enfant_age ? ` (${resa.enfant_age} ans)` : ''}`
+      : null,
+    `🗓 ${formatDateFR(resa.date)} à ${resa.heure}`,
+    `📍 ${modeLabel(resa)}`
+  ].filter(Boolean);
+
+  await fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ chat_id: process.env.TELEGRAM_CHAT_ID, text: lignes.join('\n') })
   });
+}
+
+async function sendNotificationAdmin(resa) {
+  if (isKarla(resa)) {
+    await transporter.sendMail({
+      from: `"RDV App" <${process.env.SMTP_USER}>`,
+      to: KARLA_NOTIFICATION_EMAIL,
+      subject: `Nouveau RDV — ${resa.prestation_titre} — ${resa.prenom} ${resa.nom}`,
+      html: `
+        <div style="font-family:Georgia,serif;color:#2B4743;max-width:600px;margin:0 auto">
+          <h2 style="color:#4A8B85">Nouvelle réservation</h2>
+          <table style="width:100%;border-collapse:collapse">
+            <tr><td style="padding:8px;border-bottom:1px solid #eee"><strong>Prestation</strong></td><td style="padding:8px;border-bottom:1px solid #eee">${resa.prestation_titre}</td></tr>
+            <tr><td style="padding:8px;border-bottom:1px solid #eee"><strong>Client</strong></td><td style="padding:8px;border-bottom:1px solid #eee">${resa.prenom} ${resa.nom}</td></tr>
+            <tr><td style="padding:8px;border-bottom:1px solid #eee"><strong>Email</strong></td><td style="padding:8px;border-bottom:1px solid #eee">${resa.email}</td></tr>
+            <tr><td style="padding:8px;border-bottom:1px solid #eee"><strong>Téléphone</strong></td><td style="padding:8px;border-bottom:1px solid #eee">${resa.telephone}</td></tr>
+            ${resa.prestation_id === 'seance_enfant' && resa.enfant_prenom ? `<tr><td style="padding:8px;border-bottom:1px solid #eee"><strong>Enfant</strong></td><td style="padding:8px;border-bottom:1px solid #eee">${resa.enfant_prenom}${resa.enfant_age ? ` (${resa.enfant_age} ans)` : ''}</td></tr>` : ''}
+            <tr><td style="padding:8px;border-bottom:1px solid #eee"><strong>Date</strong></td><td style="padding:8px;border-bottom:1px solid #eee">${formatDateFR(resa.date)} à ${resa.heure}</td></tr>
+            <tr><td style="padding:8px;border-bottom:1px solid #eee"><strong>Format</strong></td><td style="padding:8px;border-bottom:1px solid #eee">${modeLabel(resa)}</td></tr>
+          </table>
+        </div>
+      `
+    });
+    return;
+  }
+
+  await sendTelegramAdmin(resa);
 }
 
 module.exports = { sendConfirmationClient, sendNotificationAdmin };
